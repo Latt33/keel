@@ -237,8 +237,8 @@ function OutcomeBar({ outcomes, n }: { outcomes: Evidence['evidence']['outcomes'
   return (
     <div className="mt-5 flex h-8 overflow-hidden rounded-full text-[12px]" title={`All ${n} virtual patients`}>
       {OUT.map((o) => outcomes[o.k] > 0 && (
-        <div key={o.k} className={`flex items-center overflow-hidden whitespace-nowrap px-3 ${o.t}`} style={{ width: `${(outcomes[o.k] / n) * 100}%`, background: o.c }} title={`${o.label}: ${outcomes[o.k]}`}>
-          {outcomes[o.k] / n > 0.08 && <>{outcomes[o.k]} {o.label}</>}
+        <div key={o.k} className={`flex min-w-0 items-center overflow-hidden whitespace-nowrap px-3 ${o.t}`} style={{ width: `${(outcomes[o.k] / n) * 100}%`, background: o.c }} title={`${o.label}: ${outcomes[o.k]}`}>
+          {outcomes[o.k] / n > 0.08 && <span className="truncate">{outcomes[o.k]} {o.label}</span>}
         </div>
       ))}
     </div>

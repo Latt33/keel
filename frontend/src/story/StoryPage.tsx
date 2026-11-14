@@ -100,12 +100,11 @@ export default function StoryPage({ story }: { story: Story }) {
                 <span key={act.what} className="fade-in ml-3 text-mist">{act.what}</span>
               </div>
             )}
-            {ch.id === 'warning' && story.events.alert != null && d >= story.events.alert && <ClinicToast story={story} />}
           </div>
         </section>
 
         {/* right: what is measured, forecast, what is done */}
-        <section className="flex min-h-0 min-w-0 flex-col gap-3 px-4 pb-3 pt-4 sm:px-5 lg:pl-2 lg:pr-6">
+        <section className="flex min-h-0 min-w-0 flex-col gap-3 px-4 pb-3 pt-4 sm:px-5 lg:overflow-hidden lg:pl-2 lg:pr-6">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div className="text-[13px] text-mist">
               {ci === 0 ? <>Before treatment</> : d < 0 ? <>TMS course · week {Math.floor((d + 42) / 7) + 1}{sessionNo ? `, session ${sessionNo} of 30` : ''}</> : <>Day {d} at home</>}
@@ -119,7 +118,7 @@ export default function StoryPage({ story }: { story: Story }) {
               </div>
             )}
           </div>
-          <div className="min-h-[300px] flex-1 border-t border-foam/15">
+          <div className="min-h-[260px] flex-1 border-t border-foam/15 lg:min-h-[150px]">
             <MoodChart story={story} day={day} world={world} />
           </div>
 
@@ -148,12 +147,11 @@ export default function StoryPage({ story }: { story: Story }) {
               </div>
               {world === 'none' && d >= 0 ? (
                 <Unnoticed story={story} day={d} />
+              ) : ch.id === 'warning' && story.events.alert != null && d >= story.events.alert ? (
+                <ClinicToast story={story} />
               ) : (
               <div className="border-t border-foam/15 pt-4">
                 <h3 className="mb-2 text-[13px] font-medium text-foam">What helps {story.profile.name}</h3>
-                {d < 1 ? (
-                  <p className="text-[13px] leading-relaxed text-mist">Starts from what helps most people. Her own answers will move these estimates.</p>
-                ) : null}
                 <LearnedBars mean={(keelRec ?? story.keel[0]).learned.mean} sd={(keelRec ?? story.keel[0]).learned.sd} highlight={keelRec?.plan} />
               </div>
               )}
@@ -200,7 +198,7 @@ function ClinicToast({ story }: { story: Story }) {
     return `${RING_WORDS[k]} ${pct > 0 ? '+' : ''}${pct}%`
   })
   return (
-    <div className="fade-in absolute bottom-2 right-4 w-[300px] bg-foam p-5 text-ink">
+    <div className="fade-in self-start bg-foam p-5 text-ink">
       <div className="flex items-center justify-between text-[11px] text-ink/50"><span>Espoo TMS clinic · call list</span><span>day {a}</span></div>
       <div className="mt-1.5 flex items-center gap-2">
         <span className="pulse-ring inline-block h-2.5 w-2.5 rounded-full bg-storm" />
@@ -236,7 +234,6 @@ function Results({ story }: { story: Story }) {
       <div className="space-y-3 text-[13px] leading-snug text-mist">
         <p><span className="font-serif text-[30px] text-foam">{c.forecast.median_warning_days_keel} days</span><br />typical warning before a relapse, against {c.forecast.median_warning_days_checkin_only} from check-ins alone at the same false-alarm rate</p>
         <p><span className="font-serif text-[30px] text-foam">{keel.boosters_per_patient.toFixed(1)}</span> booster blocks per person in 6 months, only when the forecast called for one</p>
-        <p className="text-[11px] text-mist/70">{c.n_patients} simulated patients, calibrated to rTMS durability data, plus a check on real wearable data.</p>
         <a href="#/proof" className="inline-block rounded-full border border-foam px-5 py-2 text-[15px] tracking-[-0.03em] text-foam hover:bg-foam hover:text-sea">How we know</a>
       </div>
     </div>

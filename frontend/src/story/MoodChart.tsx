@@ -116,10 +116,10 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
         {/* legend */}
         <g transform={`translate(${m.l},14)`} className="text-[11px]">
           <line x1={0} x2={18} y1={0} y2={0} stroke="#f3efe6" strokeWidth={3} />
-          <text x={24} y={4} className="fill-foam">How she says she feels</text>
-          {day >= 3 && (<g transform="translate(170,0)">
+          <text x={24} y={4} className="fill-foam">{W > 460 ? 'How she says she feels' : 'She says'}</text>
+          {day >= 3 && (<g transform={`translate(${W > 460 ? 170 : 96},0)`}>
             <line x1={0} x2={18} y1={0} y2={0} stroke="#8ec5ff" strokeWidth={1.6} strokeDasharray="5 4" />
-            <text x={24} y={4} className="fill-foam">What her sleep and activity say</text>
+            <text x={24} y={4} className="fill-foam">{W > 460 ? 'What her sleep and activity say' : 'Her ring says'}</text>
           </g>)}
           {day >= 14 && W > 620 && (<g transform="translate(390,0)">
             <rect x={0} y={-5} width={18} height={10} fill={fc} opacity={0.35} />

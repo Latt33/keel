@@ -32,20 +32,20 @@ export default function ClinicPage() {
         </div>
         {GROUPS.map((g) => (
           <section key={g.key} className="mb-6">
-            <div className="mb-2 flex items-baseline gap-3">
+            <div className="mb-2 flex flex-wrap items-baseline gap-x-3">
               <h2 className="font-serif text-[24px]">{g.title}</h2>
               <span className="text-[12px] text-ink/50">{g.hint}</span>
             </div>
             <div className="border-t border-ink/15">
               {rows.filter((r) => r.status === g.key).map((r) => (
                 <button key={r.id} onClick={() => setSel(r.id)}
-                  className={`grid w-full grid-cols-[150px_130px_1fr_auto] items-center gap-4 border-b border-ink/5 px-4 py-3 text-left last:border-0 hover:bg-fog/50 ${sel === r.id ? 'bg-fog/70' : ''}`}>
+                  className={`grid w-full grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[150px_130px_1fr_auto] border-b border-ink/5 px-4 py-3 text-left last:border-0 hover:bg-fog/50 ${sel === r.id ? 'bg-fog/70' : ''}`}>
                   <div>
                     <div className="text-[14px] font-medium">{r.name}</div>
                     <div className="text-[12px] text-ink/50">{r.age} · day {r.day} after TMS</div>
                   </div>
-                  <Spark data={r.spark} status={r.status} />
-                  <div className="flex flex-wrap gap-1">
+                  <div className="hidden md:block"><Spark data={r.spark} status={r.status} /></div>
+                  <div className="hidden flex-wrap gap-1 md:flex">
                     {r.reasons.slice(0, 3).map((x) => (
                       <span key={x.text} className={`mr-3 text-[12px] ${x.kind === 'mood' ? 'text-[#b5443a]' : 'text-ink/60'}`}>{x.text}</span>
                     ))}

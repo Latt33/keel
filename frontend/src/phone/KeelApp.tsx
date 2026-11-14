@@ -141,7 +141,7 @@ function PathView({ st, notes, onDay }: { st: LiveState; notes: Record<number, s
 
   return (
     <div ref={ref} className="absolute inset-0 overflow-y-auto overflow-x-hidden pt-24">
-      <svg width={W} height={H} className="mx-auto block">
+      <svg viewBox={`0 0 ${W} ${H}`} className="mx-auto block h-auto w-full max-w-[366px]">
         {/* eras */}
         <rect x={0} y={yTms(0) - 16} width={W} height={(TMS_ROWS + 1) * STEP + 20} fill={BRASS} opacity={0.1} />
         <text x={16} y={yTms(0) - 2} fontSize={10} fill={BRASS} letterSpacing="0.02em">TMS course · 30 sessions</text>

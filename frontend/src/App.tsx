@@ -30,12 +30,12 @@ export default function App() {
   if (route === 'home') return <Landing />
   return (
     <div className={`grid h-full grid-rows-[auto_1fr] ${light ? 'bg-fog text-ink' : 'bg-sea text-foam'}`}>
-      <header className="flex items-center gap-4 px-4 py-4 sm:gap-8 sm:px-8">
-        <a href="#/" className="flex items-baseline gap-2">
+      <header className="flex min-w-0 items-center gap-4 px-4 py-4 sm:gap-8 sm:px-8">
+        <a href="#/" className="flex shrink-0 items-baseline gap-2">
           <Logo light={light} />
-          <span className="text-[19px] leading-none tracking-[-0.02em]">Keel</span>
+          <span className="hidden text-[19px] leading-none tracking-[-0.02em] sm:inline">Keel</span>
         </a>
-        <nav className="ml-auto flex items-center gap-1 text-[13px] sm:gap-3 sm:text-[16px]">
+        <nav className="ml-auto flex min-w-0 items-center gap-1 overflow-x-auto text-[13px] sm:gap-3 sm:text-[16px]">
           {([['story', 'Aino’s story'], ['phone', 'Aino’s phone'], ['clinic', 'The clinic'], ['proof', 'How we know'], ...(hasRing ? [['ring', 'Your ring']] : [])] as [Route, string][]).map(([r, label]) => (
             <a key={r} href={`#/${r}`} aria-current={route === r ? 'page' : undefined}
               className={`whitespace-nowrap px-1.5 py-1 tracking-[-0.03em] decoration-1 underline-offset-[6px] sm:px-2 ${route === r ? 'underline' : 'hover:underline'} ${light ? 'text-ink' : 'text-foam'}`}>

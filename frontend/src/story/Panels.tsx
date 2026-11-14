@@ -24,10 +24,12 @@ export function LearnedBars({ mean, sd, dark = true, highlight, you = false }: {
           </div>
         )
       })}
-      <div className={`grid ${you ? 'grid-cols-[8rem_1fr]' : 'grid-cols-[9.5rem_1fr]'} gap-2 text-[10px] ${dark ? 'text-mist/70' : 'text-ink/50'}`}>
-        <span />
-        <div className="flex justify-between gap-2"><span>no effect</span><span className="text-right">{you ? 'helps a lot' : 'lowers her score by 3 points'}</span></div>
-      </div>
+      {you && (
+        <div className="grid grid-cols-[8rem_1fr] gap-2 text-[10px] text-ink/50">
+          <span />
+          <div className="flex justify-between gap-2"><span>no effect</span><span className="text-right">helps a lot</span></div>
+        </div>
+      )}
     </div>
   )
 }
