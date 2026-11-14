@@ -1,0 +1,44 @@
+{
+  "n_samples": 7291,
+  "n_participants": 3069,
+  "positive_rate": 0.13,
+  "auc": {
+    "wearable only": 0.599,
+    "PHQ-9 now only": 0.792,
+    "wearable + PHQ-9 now": 0.782
+  },
+  "top_wearable_features": [
+    {
+      "feature": "steps_lpa_sum_recent",
+      "auc_drop": 0.0077
+    },
+    {
+      "feature": "steps__light_activity__sum__intercept",
+      "auc_drop": 0.0061
+    },
+    {
+      "feature": "steps_mvpa_sum_recent",
+      "auc_drop": 0.0059
+    },
+    {
+      "feature": "sleep__main_start_hour_adj__coeff_",
+      "auc_drop": 0.0056
+    },
+    {
+      "feature": "steps__light_activity__sum__intercept_",
+      "auc_drop": 0.0054
+    },
+    {
+      "feature": "sleep__main_efficiency__score",
+      "auc_drop": 0.0053
+    },
+    {
+      "feature": "sleep_asleep_iqr",
+      "auc_drop": 0.005
+    },
+    {
+      "feature": "steps_rolling_6_max_recent",
+      "auc_drop": 0.004
+    }
+  ]
+}

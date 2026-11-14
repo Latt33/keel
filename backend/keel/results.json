@@ -1,0 +1,43 @@
+{
+  "n_patients": 300,
+  "days": 180,
+  "policies": {
+    "none": {
+      "relapse_free_90": 0.67,
+      "relapse_free_180": 0.563,
+      "days_relapsed_mean": 41.8,
+      "boosters_per_patient": 0.0
+    },
+    "fixed": {
+      "relapse_free_90": 0.777,
+      "relapse_free_180": 0.66,
+      "days_relapsed_mean": 29.2,
+      "boosters_per_patient": 0.0
+    },
+    "keel_plan": {
+      "relapse_free_90": 0.803,
+      "relapse_free_180": 0.7,
+      "days_relapsed_mean": 24.3,
+      "boosters_per_patient": 0.0
+    },
+    "keel": {
+      "relapse_free_90": 0.947,
+      "relapse_free_180": 0.887,
+      "days_relapsed_mean": 2.4,
+      "boosters_per_patient": 0.69
+    }
+  },
+  "forecast": {
+    "auc_14d_keel": 0.941,
+    "auc_14d_checkin_only": 0.911,
+    "median_warning_days_keel": 23.0,
+    "median_warning_days_checkin_only": 16.0,
+    "false_alarm_rate_matched": 0.1
+  },
+  "learning": {
+    "mean_abs_error_prior": 0.395,
+    "mean_abs_error_day180": 0.301,
+    "top2_in_true_top3_population_guess": 0.588,
+    "top2_in_true_top3_day180": 0.827
+  }
+}

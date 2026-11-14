@@ -1,0 +1,15 @@
+{
+  "name": "keel",
+  "private": true,
+  "scripts": {
+    "api": "cd backend && python -m uvicorn keel.api:app --port 8000 --reload",
+    "web": "cd frontend && npm run dev",
+    "dev": "concurrently -k -n api,web -c cyan,green \"npm:api\" \"npm:web\"",
+    "build": "cd frontend && npm run build",
+    "serve": "cd backend && python -m uvicorn keel.api:app --port 8000",
+    "test": "cd backend && python -m pytest -q"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

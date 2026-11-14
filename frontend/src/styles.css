@@ -1,0 +1,38 @@
+@import "tailwindcss";
+@import "@fontsource/newsreader/400.css";
+@import "@fontsource/newsreader/500.css";
+@import "@fontsource/newsreader/400-italic.css";
+@import "@fontsource/schibsted-grotesk/400.css";
+@import "@fontsource/schibsted-grotesk/500.css";
+@import "@fontsource/schibsted-grotesk/600.css";
+@import "@fontsource/schibsted-grotesk/700.css";
+
+@theme {
+  --font-sans: "Schibsted Grotesk", system-ui, sans-serif;
+  --font-serif: "Newsreader", Georgia, serif;
+  --color-sea: #0f2236;
+  --color-sea-2: #16304a;
+  --color-sea-3: #21435f;
+  --color-mist: #9fb3c4;
+  --color-foam: #eef3f5;
+  --color-fog: #e6ecef;
+  --color-ink: #142231;
+  --color-calm: #62c2a6;
+  --color-squall: #f0b24a;
+  --color-storm: #ef6a5b;
+  --color-body: #8ec5ff;
+  --color-brass: #d9b878;
+}
+
+html, body, #root { height: 100%; }
+body { margin: 0; font-family: var(--font-sans); background: var(--color-sea); color: var(--color-foam); -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--color-body); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+input[type=range].slider { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 999px; background: #d5dee4; }
+input[type=range].slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--color-ink); border: 3px solid white; box-shadow: 0 1px 4px rgba(20,34,49,.35); cursor: pointer; }
+input[type=range].slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--color-ink); border: 3px solid white; }
+.fade-in { animation: fadein .5s ease both; }
+@keyframes fadein { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: none } }
+.pulse-ring { animation: pulsering 1.6s ease-out infinite; }
+@keyframes pulsering { 0% { box-shadow: 0 0 0 0 rgba(239,106,91,.55) } 100% { box-shadow: 0 0 0 14px rgba(239,106,91,0) } }
