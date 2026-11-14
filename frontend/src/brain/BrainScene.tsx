@@ -9,9 +9,8 @@ const BRAIN_HEIGHT = 2.1
 function Brain({ health, onReady }: { health: React.MutableRefObject<number[]>; onReady?: () => void }) {
   const { scene } = useGLTF('/brain.glb')
   const mat = useMemo(() => new THREE.MeshPhysicalMaterial({
-    // outer surface only: soft, porcelain-like, see-through enough to show the network inside
-    color: '#e9ecea', emissive: new THREE.Color('#2a3136'), emissiveIntensity: 0.06, sheen: 0.6, sheenColor: new THREE.Color('#ffffff'),
-    transparent: true, opacity: 0.64, roughness: 0.4, metalness: 0, depthWrite: false, side: THREE.FrontSide,
+    color: '#c4c9cc', emissive: new THREE.Color('#2a3136'), emissiveIntensity: 0.25,
+    transparent: true, opacity: 0.2, roughness: 0.35, metalness: 0, depthWrite: false, side: THREE.DoubleSide,
   }), [])
   const model = useMemo(() => {
     const root = scene.clone(true)
@@ -222,9 +221,8 @@ function Rig({ s, coil, labels, autoRotate, labelEls, ease, onReady }: { s: numb
   })
   return (
     <>
-      <ambientLight intensity={0.45} />
-      <directionalLight position={[-3, 5, 3]} intensity={2.4} />
-      <directionalLight position={[3, 1, -3]} intensity={0.6} color="#9fc4e8" />
+      <ambientLight intensity={0.7} />
+      <directionalLight position={[-3, 4, 4]} intensity={1.2} />
       <pointLight position={[3, -2, -3]} intensity={0.6} color="#7fb2ff" />
       {/* nothing shows until the brain itself has loaded, so the network never floats alone */}
       <Suspense fallback={null}>
@@ -237,7 +235,7 @@ function Rig({ s, coil, labels, autoRotate, labelEls, ease, onReady }: { s: numb
           {location.search.includes("axes") && <axesHelper args={[1.5]} />}
         </group>
       </Suspense>
-      <OrbitControls target={[0, -0.05, 0]} enablePan={false} minDistance={3} maxDistance={7} autoRotate={autoRotate} autoRotateSpeed={0.35} enableDamping />
+      <OrbitControls target={[0, -0.05, 0]} enablePan={false} minDistance={2.6} maxDistance={6} autoRotate={autoRotate} autoRotateSpeed={0.35} enableDamping />
     </>
   )
 }
