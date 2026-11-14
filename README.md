@@ -6,7 +6,7 @@
 
 **Staying well at home after TMS for depression.**
 
-[**Try the live demo**](https://keel-q220.onrender.com) · [Read the whitepaper](docs/paper/keel.pdf) · [Watch the 90-second demo](docs/demo.mp4)
+[**Try the live demo**](https://keel-q220.onrender.com) · [Read the whitepaper](docs/paper/keel.pdf) · [Watch the demo video](https://keel-q220.onrender.com/keel-demo.mp4)
 
 Junction 2026 · Aalto NBE challenge *Help people stay well at home after depression treatment*
 
