@@ -43,7 +43,7 @@ Built with heavy AI assistance (Claude) for code and copy, directed and reviewed
 | Item | Source | Licence |
 |---|---|---|
 | Idea of a mechanistic "digital shadow" + optimiser + clinician-in-the-loop, and the 3D brain approach | Our earlier hackathon project StimIQ (github.com/Latt33/StimIQ). No code copied; everything here was written during Junction 2026 | own work |
-| `frontend/public/brain.glb` | "Brain" by maheshshinde777, Sketchfab | CC BY 4.0 |
+| `frontend/public/brain.glb` | Cortical surface of the MNI ICBM152 template (Collins, McConnell Brain Imaging Centre, MNI), mesh from NiiVue, mirrored to two hemispheres and simplified | Free with notice: see `frontend/public/brain-LICENSE.txt` |
 | PSYCHE-D dataset (not committed) | Zenodo 5085146 | CC BY-NC 4.0 |
 | Font | Geist via Fontsource (visual style modelled on neuralink.com; their Untitled Sans is commercial and not included) | SIL OFL |
 

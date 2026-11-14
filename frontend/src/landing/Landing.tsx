@@ -28,7 +28,7 @@ export default function Landing() {
   return (
     <div className={`relative h-full overflow-hidden bg-sea text-foam transition-opacity duration-500 ${leaving ? 'opacity-0' : 'opacity-100'}`}>
       <div className={`absolute inset-0 transition-opacity duration-1000 ${ready ? 'opacity-100' : 'opacity-0'}`}>
-        <BrainScene s={s} coil={coil} labels={false} autoRotate camera={[-2.9, 0.5, 2.3]} ease={0.7} onReady={onReady} />
+        <BrainScene s={s} coil={coil} labels={false} autoRotate camera={[-3.5, 0.7, 2.9]} ease={0.7} onReady={onReady} />
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-sea via-sea/80 to-transparent" />
       <div className="relative flex h-full flex-col justify-end px-6 pb-12 sm:px-14 sm:pb-14">
@@ -50,7 +50,7 @@ export default function Landing() {
         </svg>
         <span className="text-[19px] leading-none tracking-[-0.02em]">Keel</span>
       </div>
-      <div className="absolute bottom-4 right-6 hidden text-[11px] text-mist/40 sm:block">Brain model: maheshshinde777, CC BY 4.0</div>
+      <div className="absolute bottom-4 right-6 hidden text-[11px] text-mist/40 sm:block">Brain: MNI ICBM152 template</div>
     </div>
   )
 }

@@ -9,8 +9,9 @@ const BRAIN_HEIGHT = 2.1
 function Brain({ health, onReady }: { health: React.MutableRefObject<number[]>; onReady?: () => void }) {
   const { scene } = useGLTF('/brain.glb')
   const mat = useMemo(() => new THREE.MeshPhysicalMaterial({
-    color: '#c4c9cc', emissive: new THREE.Color('#2a3136'), emissiveIntensity: 0.25,
-    transparent: true, opacity: 0.2, roughness: 0.35, metalness: 0, depthWrite: false, side: THREE.DoubleSide,
+    // outer surface only: soft, porcelain-like, see-through enough to show the network inside
+    color: '#e9ecea', emissive: new THREE.Color('#2a3136'), emissiveIntensity: 0.06, sheen: 0.6, sheenColor: new THREE.Color('#ffffff'),
+    transparent: true, opacity: 0.64, roughness: 0.4, metalness: 0, depthWrite: false, side: THREE.FrontSide,
   }), [])
   const model = useMemo(() => {
     const root = scene.clone(true)
@@ -111,15 +112,22 @@ function Node({ i, health }: { i: number; health: React.MutableRefObject<number[
   )
 }
 
-/** Figure-8 TMS coil resting over the left DLPFC, firing pulse trains when active. */
+/** Figure-8 TMS coil resting on the scalp over the left DLPFC: a matte two-wing paddle with a handle
+ *  and cable, as used in clinics. When it fires (10 Hz trains), the spot under its centre glows. */
 function Coil({ active }: { active: boolean }) {
   const g = useRef<THREE.Group>(null)
-  const shells = useRef<(THREE.Mesh | null)[]>([])
-  const mats = useRef<THREE.MeshStandardMaterial[]>([])
+  const glow = useRef<THREE.Mesh>(null)
+  const ring = useRef<THREE.Mesh>(null)
+  const lamp = useRef<THREE.MeshBasicMaterial>(null)
   const target = pos('dlpfc')
-  const dir = target.clone().sub(new THREE.Vector3(0, 0.3, 0)).normalize()
-  const place = target.clone().add(dir.clone().multiplyScalar(0.3))
-  const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir)
+  const center = new THREE.Vector3(0, 0.05, 0.1)
+  const normal = target.clone().sub(center).normalize()
+  const place = target.clone().add(normal.clone().multiplyScalar(0.24))
+  // coil plane tangent to the head, wings running front-to-back at 45 degrees, like a clinical placement
+  const quat = useMemo(() => {
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal)
+    return q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4))
+  }, [normal.x, normal.y, normal.z])
   useFrame((st, dt) => {
     if (!g.current) return
     const want = active ? 1 : 0
@@ -127,39 +135,56 @@ function Coil({ active }: { active: boolean }) {
     const nxt = cur + (want - cur) * Math.min(1, dt * 4)
     g.current.scale.setScalar(Math.max(0.0001, nxt))
     g.current.visible = nxt > 0.02
-    // 10 Hz trains: 4 s on, short pause (schematic of an rTMS train)
     const t = st.clock.elapsedTime
-    const on = active && t % 2.2 < 1.4
-    const flash = on ? 0.5 + 0.5 * Math.sin(t * 2 * Math.PI * 5) : 0
-    mats.current.forEach((m) => { if (m) m.emissiveIntensity = 0.15 + 0.5 * flash })
-    shells.current.forEach((s, i) => {
-      if (!s) return
-      const ph = (t * 1.6 + i / 3) % 1
-      const k = on ? ph : 0
-      s.position.set(0, 0, -0.4 * k)
-      s.scale.setScalar(0.1 + 0.16 * k)
-      ;(s.material as THREE.MeshBasicMaterial).opacity = on ? (1 - ph) * 0.35 : 0
-    })
+    const on = active && t % 2.2 < 1.4                         // a train of pulses, then a pause
+    const pulse = on ? Math.pow(0.5 + 0.5 * Math.sin(t * 2 * Math.PI * 5), 3) : 0
+    if (glow.current) {
+      ;(glow.current.material as THREE.MeshBasicMaterial).opacity = 0.15 + 0.55 * pulse
+      glow.current.scale.set(0.11 + 0.03 * pulse, 0.05, 0.08 + 0.02 * pulse)
+    }
+    if (ring.current) {
+      const ph = (t * 1.4) % 1
+      ring.current.scale.setScalar(0.06 + 0.22 * ph)
+      ;(ring.current.material as THREE.MeshBasicMaterial).opacity = on ? (1 - ph) * 0.45 : 0
+    }
+    if (lamp.current) lamp.current.color.set(on ? '#6fd3b6' : '#3a4a46')
   })
   return (
     <group position={place} quaternion={quat}>
       <group ref={g} scale={0.0001}>
-        {[-0.128, 0.128].map((x, i) => (
+        <group scale={0.72}>
+        {/* the paddle: two round wings joined in the middle */}
+        {[-0.13, 0.13].map((x) => (
           <mesh key={x} position={[x, 0, 0]}>
-            <torusGeometry args={[0.12, 0.026, 16, 48]} />
-            <meshStandardMaterial ref={(m) => { if (m) mats.current[i] = m }} color="#c9a764" emissive="#d9b878" emissiveIntensity={0.15} metalness={0.7} roughness={0.35} />
+            <cylinderGeometry args={[0.15, 0.15, 0.045, 48]} />
+            <meshStandardMaterial color="#e7e9e6" roughness={0.55} metalness={0.05} />
           </mesh>
         ))}
-        <mesh position={[0, 0.0, 0.05]} rotation={[Math.PI / 2, 0, 0]}>
-          <cylinderGeometry args={[0.022, 0.022, 0.12, 12]} />
-          <meshStandardMaterial color="#5c6b78" metalness={0.5} roughness={0.5} />
+        <mesh><boxGeometry args={[0.2, 0.045, 0.2]} /><meshStandardMaterial color="#e7e9e6" roughness={0.55} metalness={0.05} /></mesh>
+        {/* a darker face with the two winding outlines */}
+        {[-0.13, 0.13].map((x) => (
+          <mesh key={'w' + x} position={[x, 0.024, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.07, 0.125, 48]} />
+            <meshStandardMaterial color="#c9cdcb" roughness={0.7} />
+          </mesh>
+        ))}
+        {/* status light */}
+        <mesh position={[0, 0.026, 0.06]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[0.012, 16]} /><meshBasicMaterial ref={lamp} toneMapped={false} /></mesh>
+        {/* handle, angled up and back */}
+        <mesh position={[0, 0.17, -0.06]} rotation={[-0.35, 0, 0]}>
+          <cylinderGeometry args={[0.032, 0.04, 0.34, 20]} />
+          <meshStandardMaterial color="#2a3136" roughness={0.6} />
         </mesh>
-        {[0, 1, 2].map((i) => (
-          <mesh key={i} ref={(el) => { shells.current[i] = el }}>
-            <ringGeometry args={[0.9, 1, 48]} />
-            <meshBasicMaterial color="#f3e2b8" transparent opacity={0} side={THREE.DoubleSide} depthWrite={false} toneMapped={false} />
-          </mesh>
-        ))}
+        {/* the stimulated spot under the centre of the coil */}
+        <mesh ref={glow} position={[0, -0.3, 0]}>
+          <sphereGeometry args={[1, 24, 16]} />
+          <meshBasicMaterial color="#6fd3b6" transparent opacity={0} depthWrite={false} toneMapped={false} blending={THREE.AdditiveBlending} />
+        </mesh>
+        <mesh ref={ring} position={[0, -0.27, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.92, 1, 48]} />
+          <meshBasicMaterial color="#6fd3b6" transparent opacity={0} side={THREE.DoubleSide} depthWrite={false} toneMapped={false} />
+        </mesh>
+        </group>
       </group>
     </group>
   )
@@ -197,8 +222,9 @@ function Rig({ s, coil, labels, autoRotate, labelEls, ease, onReady }: { s: numb
   })
   return (
     <>
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[-3, 4, 4]} intensity={1.2} />
+      <ambientLight intensity={0.45} />
+      <directionalLight position={[-3, 5, 3]} intensity={2.4} />
+      <directionalLight position={[3, 1, -3]} intensity={0.6} color="#9fc4e8" />
       <pointLight position={[3, -2, -3]} intensity={0.6} color="#7fb2ff" />
       {/* nothing shows until the brain itself has loaded, so the network never floats alone */}
       <Suspense fallback={null}>
@@ -211,7 +237,7 @@ function Rig({ s, coil, labels, autoRotate, labelEls, ease, onReady }: { s: numb
           {location.search.includes("axes") && <axesHelper args={[1.5]} />}
         </group>
       </Suspense>
-      <OrbitControls target={[0, -0.05, 0]} enablePan={false} minDistance={2.6} maxDistance={6} autoRotate={autoRotate} autoRotateSpeed={0.35} enableDamping />
+      <OrbitControls target={[0, -0.05, 0]} enablePan={false} minDistance={3} maxDistance={7} autoRotate={autoRotate} autoRotateSpeed={0.35} enableDamping />
     </>
   )
 }

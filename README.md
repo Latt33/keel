@@ -174,6 +174,6 @@ Aalto University School of Science
 ## Acknowledgments
 
 Aalto NBE for the challenge · PSYCHE-D by Makhmutova et al. (Zenodo 5085146, CC BY-NC 4.0) ·
-Brain model "Brain" by maheshshinde777 on Sketchfab (CC BY 4.0) · Geist typeface (SIL Open Font License)
+Brain surface from the MNI ICBM152 template (McConnell Brain Imaging Centre, MNI), via NiiVue · Geist typeface (SIL Open Font License)
 
 <sub>Keel is a research demonstrator, not a medical device. Every patient in the demo is simulated.</sub>
