@@ -89,7 +89,7 @@ function Detail({ d, onAct }: { d: ClinicDetail; onAct: (id: string, a: string) 
           <h2 className="font-serif text-[26px] leading-tight">{d.name}</h2>
           <p className="text-[13px] text-ink/60">{d.age} years · day {d.day} after TMS · answers {Math.round(d.checkin_rate * 100)}% of check-ins · does {Math.round(d.adherence * 100)}% of {pronoun} plan</p>
         </div>
-        <span className={`rounded-full px-2.5 py-1 text-[12px] font-semibold ${d.status === 'act' ? 'bg-storm text-white' : d.status === 'watch' ? 'bg-squall text-ink' : 'bg-calm text-ink'}`}>{Math.round(d.risk * 100)}% risk</span>
+        <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-semibold ${d.status === 'act' ? 'bg-storm text-white' : d.status === 'watch' ? 'bg-squall text-ink' : 'bg-calm text-ink'}`}>{Math.round(d.risk * 100)}% risk</span>
       </div>
 
       <h3 className="mt-4 text-[13px] font-semibold">Last 30 days and the next 14</h3>

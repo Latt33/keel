@@ -7,6 +7,10 @@ booster before a crisis.
 
 Junction 2026 · Aalto NBE challenge "Help people stay well at home after depression treatment".
 
+![Aino's story, warning chapter](docs/screens/06-warning.png)
+
+A 90-second walkthrough is in `docs/demo.mp4`; all chapters are in `docs/screens/`.
+
 ## Run it
 
 Needs Python 3.11+ and Node 20+.

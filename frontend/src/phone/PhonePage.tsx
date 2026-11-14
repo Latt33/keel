@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { api, DOSE_KEYS, DOSE_LABEL, type LiveState, type Story } from '../api'
 import MiniForecast from '../charts/MiniForecast'
 import { riskColor, riskWord } from '../lib'
@@ -21,6 +21,7 @@ export default function PhonePage({ story }: { story: Story }) {
   const [done, setDone] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [sent, setSent] = useState(false)
+  const screen = useRef<HTMLDivElement>(null)
   useEffect(() => { api.live().then(setSt) }, [])
   useEffect(() => { if (st) setDone(st.plan.slice(0, 1)) }, [st?.day]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -30,6 +31,7 @@ export default function PhonePage({ story }: { story: Story }) {
     const before = st
     const nxt = await api.checkin(answers, done)
     setPrev(before); setSt(nxt); setBusy(false); setSent(true)
+    screen.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
   const reset = async () => { const s = await api.reset(); setPrev(null); setSt(s); setSent(false); setAnswers(GOOD) }
 
@@ -37,7 +39,7 @@ export default function PhonePage({ story }: { story: Story }) {
   const name = story.profile.name
   return (
     <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-10 px-6 py-8 lg:grid-cols-[400px_1fr]">
-      <Phone>
+      <Phone screenRef={screen}>
         <div className="flex items-baseline justify-between">
           <h2 className="font-serif text-[26px] leading-tight">Good evening, {name}</h2>
           <span className="text-[12px] text-ink/50">day {st.day} at home</span>
@@ -118,10 +120,10 @@ export default function PhonePage({ story }: { story: Story }) {
   )
 }
 
-function Phone({ children }: { children: React.ReactNode }) {
+function Phone({ children, screenRef }: { children: React.ReactNode; screenRef: React.RefObject<HTMLDivElement | null> }) {
   return (
-    <div className="mx-auto w-[390px] rounded-[44px] bg-ink p-3 shadow-2xl">
-      <div className="relative h-[800px] overflow-y-auto rounded-[34px] bg-fog px-5 pb-6 pt-10">
+    <div className="mx-auto w-[390px] max-w-full rounded-[44px] bg-ink p-3 shadow-2xl">
+      <div ref={screenRef} className="relative h-[min(800px,calc(100vh-120px))] overflow-y-auto rounded-[34px] bg-fog px-5 pb-6 pt-10">
         <div className="absolute left-1/2 top-3 h-5 w-24 -translate-x-1/2 rounded-full bg-ink" />
         {children}
       </div>

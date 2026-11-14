@@ -7,7 +7,7 @@ const Y1 = 24
 
 export default function MoodChart({ story, day, world }: { story: Story; day: number; world: 'keel' | 'none' }) {
   const [ref, { width, height }] = useSize<HTMLDivElement>()
-  const m = { l: 34, r: 16, t: 40, b: 30 }
+  const m = { l: 34, r: 28, t: 40, b: 30 }
   const W = Math.max(width, 10), H = Math.max(height, 10)
   const x = lin(X0, X1, m.l, W - m.r)
   const y = lin(0, Y1, H - m.b, m.t)
@@ -121,11 +121,11 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
             <line x1={0} x2={18} y1={0} y2={0} stroke="#8ec5ff" strokeWidth={1.6} strokeDasharray="5 4" />
             <text x={24} y={4} className="fill-foam">What her sleep and activity say</text>
           </g>)}
-          {day >= 14 && (<g transform="translate(390,0)">
+          {day >= 14 && W > 620 && (<g transform="translate(390,0)">
             <rect x={0} y={-5} width={18} height={10} fill={fc} opacity={0.35} />
             <text x={24} y={4} className="fill-foam">Next 2 weeks</text>
           </g>)}
-          {day >= 0 && (<g transform="translate(490,0)">
+          {day >= 0 && W > 720 && (<g transform="translate(490,0)">
             <line x1={0} x2={18} y1={0} y2={0} stroke="#ef6a5b" strokeWidth={2} strokeOpacity={0.7} />
             <text x={24} y={4} className="fill-foam">Same life, without Keel</text>
           </g>)}

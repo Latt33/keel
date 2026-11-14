@@ -12,6 +12,7 @@ export default function StoryPage({ story }: { story: Story }) {
   const [target, setTarget] = useState<number | null>(null)
   const [override, setOverride] = useState<'keel' | 'none' | null>(null)
   const [ci, setCi] = useState(0)
+  const [auto, setAuto] = useState(() => new URLSearchParams(location.search).has('autoplay'))
   const raf = useRef<number>(0)
   const ch = chapters[ci]
   const world = override ?? ch.world
@@ -49,6 +50,14 @@ export default function StoryPage({ story }: { story: Story }) {
     setOverride(null); setTarget(null); setCi(k); setDay(chapters[k].start)
   }, [chapters, ci])
 
+  // booth mode: advance by itself, with reading time after each chapter
+  useEffect(() => {
+    if (!auto || target != null) return
+    const last = ci === chapters.length - 1
+    const t = setTimeout(() => (last ? go(0) : next()), last ? 12000 : ci === 0 ? 3500 : 6500)
+    return () => clearTimeout(t)
+  }, [auto, target, ci, chapters.length, go, next])
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).tagName === 'INPUT') return
@@ -68,13 +77,14 @@ export default function StoryPage({ story }: { story: Story }) {
   const sessionNo = tmsRec ? story.tms.slice(0, d + 43).filter((t) => t.session).length : 0
 
   return (
-    <div className="grid h-full grid-rows-[1fr_auto]">
+    <div className="grid min-h-full grid-rows-[1fr_auto] lg:h-full">
       <div className="grid min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)]">
         {/* left: the person and her brain */}
-        <section className="relative flex min-h-[420px] flex-col">
+        <section className="relative flex min-h-[460px] min-w-0 flex-col">
           <div key={ch.id} className="fade-in relative z-10 px-6 pt-5">
             <h1 className="max-w-[34rem] font-serif text-[clamp(1.6rem,2.4vw,2.2rem)] leading-[1.12] text-foam">{ch.title}</h1>
             <p className="mt-2.5 max-w-[32rem] text-[15px] leading-relaxed text-mist">{ch.line}</p>
+            {ci === 0 && <p className="mt-4 text-[13px] text-mist/70">Press Start, or the right arrow key, to follow her through six months.</p>}
             {world === 'none' && d >= 0 && (
               <div className="mt-3 inline-block rounded-full bg-storm/20 px-3 py-1 text-[12px] text-storm">Showing the world without Keel</div>
             )}
@@ -88,13 +98,13 @@ export default function StoryPage({ story }: { story: Story }) {
             <span className="inline-flex items-center gap-1"><i className="inline-block h-2 w-2 rounded-full bg-squall" />strained</span>
             <span className="inline-flex items-center gap-1"><i className="inline-block h-2 w-2 rounded-full bg-storm" />depressed pattern</span>
             <span className="text-mist/60">Schematic of the model’s estimate, not a brain scan</span>
-            <span className="ml-auto text-mist/40">Brain model: maheshshinde777, CC BY 4.0</span>
+            <span className="text-mist/40 lg:ml-auto">Brain model: maheshshinde777, CC BY 4.0</span>
           </div>
         </section>
 
         {/* right: what is measured, forecast, what is done */}
-        <section className="flex min-h-0 flex-col gap-3 px-5 pb-3 pt-4 lg:pl-2 lg:pr-6">
-          <div className="flex items-baseline justify-between">
+        <section className="flex min-h-0 min-w-0 flex-col gap-3 px-4 pb-3 pt-4 sm:px-5 lg:pl-2 lg:pr-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div className="text-[13px] text-mist">
               {ci === 0 ? <>Before treatment</> : d < 0 ? <>TMS course · week {Math.floor((d + 42) / 7) + 1}{sessionNo ? `, session ${sessionNo} of 30` : ''}</> : <>Day {d} at home</>}
             </div>
@@ -150,7 +160,7 @@ export default function StoryPage({ story }: { story: Story }) {
         </section>
       </div>
 
-      <Timeline chapters={chapters} ci={ci} day={day} onGo={go} onPrev={prev} onNext={next}
+      <Timeline chapters={chapters} ci={ci} day={day} onGo={go} onPrev={prev} onNext={next} auto={auto} onAuto={() => setAuto((a) => !a)}
         world={world} onWorld={(w) => setOverride(w)} canToggle={d >= 0} />
     </div>
   )
@@ -230,18 +240,19 @@ function Results({ story }: { story: Story }) {
   )
 }
 
-function Timeline({ chapters, ci, day, onGo, onPrev, onNext, world, onWorld, canToggle }: {
+function Timeline({ chapters, ci, day, onGo, onPrev, onNext, world, onWorld, canToggle, auto, onAuto }: {
   chapters: ReturnType<typeof chaptersFor>; ci: number; day: number; onGo: (i: number) => void; onPrev: () => void; onNext: () => void
+  auto: boolean; onAuto: () => void
   world: 'keel' | 'none'; onWorld: (w: 'keel' | 'none') => void; canToggle: boolean
 }) {
   const X0 = -42, X1 = 180
   const pct = (v: number) => `${((v - X0) / (X1 - X0)) * 100}%`
   const atEnd = ci === chapters.length - 1 && day >= chapters[ci].end - 0.5
   return (
-    <div className="flex items-center gap-4 border-t border-sea-3/60 bg-sea px-6 py-3">
+    <div className="sticky bottom-0 z-20 flex items-center gap-2 border-t border-sea-3/60 bg-sea px-3 py-3 sm:gap-4 sm:px-6">
       <button onClick={onPrev} className="rounded-full px-3 py-2 text-[13px] text-mist hover:text-foam" aria-label="Previous chapter">Back</button>
       <div className="flex-1">
-        <div className="grid" style={{ gridTemplateColumns: `repeat(${chapters.length - 1}, minmax(0, 1fr))` }}>
+        <div className="hidden md:grid" style={{ gridTemplateColumns: `repeat(${chapters.length - 1}, minmax(0, 1fr))` }}>
           {chapters.slice(1).map((c, i) => {
             const idx = i + 1
             const active = idx === ci
@@ -257,7 +268,7 @@ function Timeline({ chapters, ci, day, onGo, onPrev, onNext, world, onWorld, can
           <div className="absolute left-0 top-0 h-1 rounded-full bg-foam/70" style={{ width: pct(day) }} />
         </div>
       </div>
-      <div className={`flex rounded-full bg-sea-2 p-0.5 text-[12px] ${canToggle ? '' : 'opacity-40'}`}>
+      <div className={`hidden rounded-full bg-sea-2 p-0.5 text-[12px] sm:flex ${canToggle ? '' : 'opacity-40'}`}>
         {(['keel', 'none'] as const).map((w) => (
           <button key={w} disabled={!canToggle} onClick={() => onWorld(w)}
             className={`rounded-full px-3 py-1.5 ${world === w ? (w === 'keel' ? 'bg-calm text-sea' : 'bg-storm text-sea') : 'text-mist'}`}>
@@ -265,6 +276,8 @@ function Timeline({ chapters, ci, day, onGo, onPrev, onNext, world, onWorld, can
           </button>
         ))}
       </div>
+      <button onClick={onAuto} aria-pressed={auto} title="Play the story by itself"
+        className={`hidden rounded-full px-3 py-2 text-[13px] md:block ${auto ? 'text-calm' : 'text-mist hover:text-foam'}`}>{auto ? 'Autoplay on' : 'Autoplay'}</button>
       <button onClick={atEnd ? () => onGo(1) : onNext}
         className="rounded-full bg-foam px-5 py-2 text-[14px] font-semibold text-sea hover:bg-white">
         {ci === 0 && day <= -42 ? 'Start' : atEnd ? 'Replay' : 'Next'}
