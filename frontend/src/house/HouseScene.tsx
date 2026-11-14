@@ -34,7 +34,21 @@ const SPOT: Record<string, Spot> = {
   garden: { p: [0.4, 0, 3.4], pose: 'stand', face: 0, out: true },
   away: { p: [4.7, 0, 4.85], pose: 'stand', face: 0, out: true, away: true },
 }
-const DOOR = new THREE.Vector3(2.75, 0, 1.75)
+// walking routes: rooms are joined only at the open end of the divider wall (z > -0.5) and the door
+const V = (x: number, z: number) => new THREE.Vector3(x, 0, z)
+type Room = 0 | 1 | 2   // bedroom, living room + kitchen, outside
+const roomOf = (v: THREE.Vector3): Room =>
+  v.x < 3 && v.x > -3.1 && v.z < 2.1 && v.z > -2.1 ? (v.x < 0.05 ? 0 : 1) : 2
+/** The next point to walk to: straight to the target in the same room, otherwise toward the opening. */
+function nextGoal(pos: THREE.Vector3, target: THREE.Vector3): THREE.Vector3 {
+  const a = roomOf(pos), b = roomOf(target)
+  if (a === b) return target
+  if (a === 0) return pos.z < -0.25 ? V(-0.6, 0.05) : V(0.7, 0.05)        // out of the bedroom, round the wall end
+  if (a === 1 && b === 0) return pos.z < -0.25 ? V(0.7, 0.05) : V(-0.6, 0.05)
+  if (a === 1) return pos.x < 2.2 && pos.z < 1.35 ? V(1.95, 1.55) : V(3.5, 2.55)  // round the counter, out the door
+  const porch = pos.distanceTo(V(3.5, 2.55)) < 0.6 || (pos.x > 2.3 && pos.z < 2.6)
+  return porch ? V(2.35, 1.6) : V(3.5, 2.55)                               // back to the door, then in
+}
 const GARDEN_LOOP = [[-1.2, 3.2], [1.6, 3.6], [2.2, 4.6], [-0.4, 4.9], [-2.4, 4.0]]
 
 function plan(tod: number, inp: HouseInput, dayN: number): { spot: string; what: string; lamp: boolean; phone: boolean } {
@@ -163,9 +177,7 @@ function World({ inp, onActivity }: { inp: HouseInput; onActivity?: (a: Activity
       target = new THREE.Vector3(g[0], 0, g[1])
       if (pos.current.distanceTo(target) < 0.25) loopI.current++
     }
-    const inside = (v: THREE.Vector3) => v.x < 3 && v.x > -3.1 && v.z < 2.1 && v.z > -2.1
-    const cross = inside(pos.current) !== inside(target)
-    const goal = cross && pos.current.distanceTo(DOOR) > 0.2 ? DOOR : target
+    const goal = nextGoal(pos.current, target)
     const speed = (1.1 + rate * 6) * (L > 0.6 ? 0.7 : 1)
     const d = goal.clone().sub(pos.current)
     const flat = new THREE.Vector3(d.x, 0, d.z)
