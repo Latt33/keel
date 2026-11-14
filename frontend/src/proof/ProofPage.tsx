@@ -109,7 +109,7 @@ function Chart({ series, dots = [], hline, xMax, yMin, yMax, yFmt, xTicks, xFmt,
               <text x={m.l - 6} y={y(v) + 4} textAnchor="end" fontSize={10} fill={INK} fillOpacity={0.5}>{yFmt(v)}</text>
             </g>
           ))}
-          {xTicks.map((v) => <text key={v} x={x(v)} y={H - 6} textAnchor="middle" fontSize={10} fill={INK} fillOpacity={0.5}>{xFmt(v)}</text>)}
+          {(W < 520 ? xTicks.filter((_, i) => i % 2 === 0 || i === xTicks.length - 1).filter((v, i, a) => i === a.length - 1 || x(a[a.length - 1]) - x(v) > 40) : xTicks).map((v) => <text key={v} x={x(v)} y={H - 6} textAnchor="middle" fontSize={10} fill={INK} fillOpacity={0.5}>{xFmt(v)}</text>)}
           {hline && (
             <g>
               <line x1={m.l} x2={W - m.r} y1={y(hline.y)} y2={y(hline.y)} stroke={hline.color} strokeOpacity={0.5} strokeDasharray="4 4" />
@@ -148,6 +148,10 @@ function LeadHistogram({ keel, checkin }: { keel: number[]; checkin: number[] })
   const med = (a: number[]) => [...a].sort((p, q) => p - q)[Math.floor(a.length / 2)]
   return (
     <div ref={ref}>
+      <div className="mb-1 flex gap-4 text-[12px]">
+        <span style={{ color: CALM }}>Keel, median {med(keel)} days</span>
+        <span className="text-ink/55">Check-ins alone, {med(checkin)} days</span>
+      </div>
       {width > 60 && (
         <svg width={W} height={H} className="block">
           {bins.map((b, i) => (
@@ -157,11 +161,8 @@ function LeadHistogram({ keel, checkin }: { keel: number[]; checkin: number[] })
             </g>
           ))}
           {[0, 12, 24, 36, 48, 60].map((v) => <text key={v} x={x(v)} y={H - 6} textAnchor="middle" fontSize={10} fill={INK} fillOpacity={0.5}>{v === 60 ? '60+' : v === 0 ? '0 days' : v}</text>)}
-          {[{ v: med(checkin), c: INK, t: 'check-ins alone' }, { v: med(keel), c: CALM, t: 'Keel' }].map((q, i) => (
-            <g key={q.t}>
-              <line x1={x(q.v)} x2={x(q.v)} y1={m.t} y2={H - m.b} stroke={q.c} strokeDasharray="3 3" strokeOpacity={0.8} />
-              <text x={x(q.v) + (i ? 4 : -4)} y={m.t + 10} textAnchor={i ? 'start' : 'end'} fontSize={11} fill={q.c}>{q.t} {q.v} days</text>
-            </g>
+          {[{ v: med(checkin), c: INK }, { v: med(keel), c: CALM }].map((q) => (
+            <line key={q.c} x1={x(q.v)} x2={x(q.v)} y1={m.t} y2={H - m.b} stroke={q.c} strokeDasharray="3 3" strokeOpacity={0.8} />
           ))}
         </svg>
       )}
@@ -237,8 +238,8 @@ function OutcomeBar({ outcomes, n }: { outcomes: Evidence['evidence']['outcomes'
   return (
     <div className="mt-5 flex h-8 overflow-hidden rounded-full text-[12px]" title={`All ${n} virtual patients`}>
       {OUT.map((o) => outcomes[o.k] > 0 && (
-        <div key={o.k} className={`flex min-w-0 items-center overflow-hidden whitespace-nowrap px-3 ${o.t}`} style={{ width: `${(outcomes[o.k] / n) * 100}%`, background: o.c }} title={`${o.label}: ${outcomes[o.k]}`}>
-          {outcomes[o.k] / n > 0.08 && <span className="truncate">{outcomes[o.k]} {o.label}</span>}
+        <div key={o.k} className={`flex min-w-0 items-center justify-center overflow-hidden whitespace-nowrap px-1 sm:justify-start sm:px-3 ${o.t}`} style={{ width: `${(outcomes[o.k] / n) * 100}%`, background: o.c }} title={`${o.label}: ${outcomes[o.k]}`}>
+          {outcomes[o.k] / n > 0.08 && <span className="truncate">{outcomes[o.k] / n > 0.25 ? <>{outcomes[o.k]} {o.label}</> : <><span className="sm:hidden">{outcomes[o.k]}</span><span className="hidden sm:inline">{outcomes[o.k]} {o.label}</span></>}</span>}
         </div>
       ))}
     </div>
@@ -270,7 +271,7 @@ function PairChart({ pair }: { pair: Pair }) {
           <rect x={m.l} y={m.t} width={W - m.l - m.r} height={y(15) - m.t} fill={STORM} opacity={0.06} />
           <line x1={m.l} x2={W - m.r} y1={y(15)} y2={y(15)} stroke={STORM} strokeDasharray="4 4" strokeOpacity={0.6} />
           {[0, 5, 10, 15, 20].map((v) => <text key={v} x={m.l - 6} y={y(v) + 4} textAnchor="end" fontSize={10} fill={INK} fillOpacity={0.5}>{v}</text>)}
-          {[0, 30, 60, 90, 120, 150, 179].map((v) => <text key={v} x={x(v)} y={H - 6} textAnchor="middle" fontSize={10} fill={INK} fillOpacity={0.5}>{v === 0 ? 'home' : `day ${v === 179 ? 180 : v}`}</text>)}
+          {(W < 520 ? [0, 60, 120, 179] : [0, 30, 60, 90, 120, 150, 179]).map((v) => <text key={v} x={x(v)} y={H - 6} textAnchor="middle" fontSize={10} fill={INK} fillOpacity={0.5}>{v === 0 ? 'home' : `day ${v === 179 ? 180 : v}`}</text>)}
           {pair.keel.boosters.map((b) => <rect key={b} x={x(b)} y={m.t} width={Math.max(3, x(b + 5) - x(b))} height={H - m.b - m.t} fill="#d9b878" opacity={0.35} />)}
           <path d={pathOf(pair.none.phq7.map((v, i) => [x(i), y(Math.min(24, v))]))} fill="none" stroke={STORM} strokeWidth={2} strokeOpacity={0.8} />
           <path d={pathOf(pair.keel.phq7.map((v, i) => [x(i), y(Math.min(24, v))]))} fill="none" stroke={INK} strokeWidth={2.6} />

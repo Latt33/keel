@@ -27,16 +27,16 @@ export default function Landing() {
         <BrainScene s={s} coil={coil} labels={false} autoRotate camera={[-2.9, 0.5, 2.3]} ease={0.7} />
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-sea via-sea/80 to-transparent" />
-      <div className="relative flex h-full flex-col justify-end px-8 pb-14 sm:px-14">
+      <div className="relative flex h-full flex-col justify-end px-6 pb-12 sm:px-14 sm:pb-14">
         <h1 className="land-1 max-w-[16ch] font-serif text-[clamp(2.6rem,6vw,5.6rem)] leading-[0.98]">Staying well after TMS.</h1>
         <p className="land-2 mt-5 max-w-[34rem] text-[17px] leading-relaxed text-mist">
           A ring, three short questions a day, and a care team that hears early when things start to slip.
         </p>
-        <div className="land-3 mt-9 flex items-center gap-6">
-          <button onClick={enter} className="pointer-events-auto rounded-full bg-foam px-8 py-3.5 text-[16px] tracking-[-0.03em] text-sea transition-colors hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-calm">
+        <div className="land-3 mt-9 flex items-center gap-5 sm:gap-6">
+          <button onClick={enter} className="pointer-events-auto whitespace-nowrap rounded-full bg-foam px-6 py-3.5 text-[16px] sm:px-8 tracking-[-0.03em] text-sea transition-colors hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-calm">
             Follow Aino’s six months
           </button>
-          <a href="#/proof" className="pointer-events-auto text-[15px] text-mist underline-offset-[6px] hover:text-foam hover:underline">How we know</a>
+          <a href="#/proof" className="pointer-events-auto whitespace-nowrap text-[15px] text-mist underline-offset-[6px] hover:text-foam hover:underline">How we know</a>
         </div>
       </div>
       <div className="land-1 absolute left-8 top-6 flex items-baseline gap-2 sm:left-14">
@@ -46,7 +46,7 @@ export default function Landing() {
         </svg>
         <span className="text-[19px] leading-none tracking-[-0.02em]">Keel</span>
       </div>
-      <div className="absolute bottom-4 right-6 text-[11px] text-mist/40">Brain model: maheshshinde777, CC BY 4.0</div>
+      <div className="absolute bottom-4 right-6 hidden text-[11px] text-mist/40 sm:block">Brain model: maheshshinde777, CC BY 4.0</div>
     </div>
   )
 }

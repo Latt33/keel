@@ -83,11 +83,11 @@ export default function StoryPage({ story }: { story: Story }) {
     <div className="grid min-h-full grid-rows-[1fr_auto] lg:h-full">
       <div className="grid min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)]">
         {/* left: her home, one day per turn of the sun */}
-        <section className="relative flex min-h-[460px] min-w-0 flex-col">
+        <section className="relative flex min-h-[440px] min-w-0 flex-col sm:min-h-[460px]">
           <div key={ch.id} className="fade-in relative z-10 px-6 pt-5">
             <h1 className="max-w-[34rem] font-serif text-[clamp(2rem,3.4vw,3.4rem)] leading-[1.02] text-foam">{ch.title}</h1>
             <p className="mt-2.5 max-w-[32rem] text-[15px] leading-relaxed text-mist">{ch.line}</p>
-            {ci === 0 && <p className="mt-4 text-[13px] text-mist/70">Press Start, or the right arrow key, to follow her through six months.</p>}
+            {ci === 0 && <p className="mt-4 hidden text-[13px] text-mist/70 sm:block">Press Start, or the right arrow key, to follow her through six months.</p>}
             {world === 'none' && d >= 0 && (
               <div className="mt-3 inline-block rounded-full bg-storm/20 px-3 py-1 text-[12px] text-storm">Showing the world without Keel</div>
             )}
@@ -126,7 +126,7 @@ export default function StoryPage({ story }: { story: Story }) {
             <Results story={story} />
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div className="border-t border-foam/15 pt-4">
+              <div className="hidden border-t border-foam/15 pt-4 md:block">
                 {d < 0 ? (
                   <>
                     <h3 className="mb-2 text-[13px] font-medium text-foam">In the clinic</h3>
@@ -150,7 +150,7 @@ export default function StoryPage({ story }: { story: Story }) {
               ) : ch.id === 'warning' && story.events.alert != null && d >= story.events.alert ? (
                 <ClinicToast story={story} />
               ) : (
-              <div className="border-t border-foam/15 pt-4">
+              <div className="hidden border-t border-foam/15 pt-4 md:block">
                 <h3 className="mb-2 text-[13px] font-medium text-foam">What helps {story.profile.name}</h3>
                 <LearnedBars mean={(keelRec ?? story.keel[0]).learned.mean} sd={(keelRec ?? story.keel[0]).learned.sd} highlight={keelRec?.plan} />
               </div>

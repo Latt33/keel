@@ -34,11 +34,11 @@ export default function ClinicPage() {
           <section key={g.key} className="mb-6">
             <div className="mb-2 flex flex-wrap items-baseline gap-x-3">
               <h2 className="font-serif text-[24px]">{g.title}</h2>
-              <span className="text-[12px] text-ink/50">{g.hint}</span>
+              <span className="text-[12px] text-ink/50">{g.key === 'steady' ? <><span className="sm:hidden">{counts.steady} people, no action needed</span><span className="hidden sm:inline">{g.hint}</span></> : g.hint}</span>
             </div>
-            <div className="border-t border-ink/15">
+            <div className={`border-t border-ink/15 ${g.key === 'steady' ? 'hidden sm:block' : ''}`}>
               {rows.filter((r) => r.status === g.key).map((r) => (
-                <button key={r.id} onClick={() => setSel(r.id)}
+                <button key={r.id} onClick={() => { setSel(r.id); if (innerWidth < 1280) setTimeout(() => document.getElementById('clinic-detail')?.scrollIntoView({ behavior: 'smooth' }), 350) }}
                   className={`grid w-full grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[150px_130px_1fr_auto] border-b border-ink/5 px-4 py-3 text-left last:border-0 hover:bg-fog/50 ${sel === r.id ? 'bg-fog/70' : ''}`}>
                   <div>
                     <div className="text-[14px] font-medium">{r.name}</div>
@@ -60,7 +60,7 @@ export default function ClinicPage() {
           </section>
         ))}
       </div>
-      <aside className="xl:sticky xl:top-4 xl:self-start">
+      <aside id="clinic-detail" className="scroll-mt-4 xl:sticky xl:top-4 xl:self-start">
         {detail ? <Detail d={detail} onAct={act} /> : <div className="border-t border-ink/15 pt-6 text-ink/50">Pick someone to see why they are on the list.</div>}
       </aside>
     </div>
@@ -104,14 +104,14 @@ function Detail({ d, onAct }: { d: ClinicDetail; onAct: (id: string, a: string) 
         <ul className="mt-1 space-y-1 text-[13px] text-ink/80">{d.reasons.map((r) => <li key={r.text}>{r.text}</li>)}</ul>
       </>)}
 
-      <h3 className="mt-4 text-[13px] font-medium">Ring, last 60 days against {pronoun} own normal</h3>
-      <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-1">
+      <h3 className="mt-4 hidden text-[13px] font-medium sm:block">Ring, last 60 days against {pronoun} own normal</h3>
+      <div className="mt-1 hidden grid-cols-2 gap-x-4 gap-y-1 sm:grid">
         {d.signals.filter((s) => s.key !== 'sleep_efficiency').map((s) => <SignalRow key={s.key} s={s} />)}
       </div>
 
-      <h3 className="mt-4 text-[13px] font-medium">What helps {pronoun === 'her' ? 'her' : 'him'}, learned from {pronoun} own days</h3>
-      <div className="mt-2"><LearnedBars mean={d.learned.map((l) => l.mean)} sd={d.learned.map((l) => l.sd)} dark={false} highlight={d.plan} /></div>
-      <p className="mt-2 text-[12px] text-ink/50">Current plan: {d.plan.map((k) => DOSE_LABEL[k]).join(', ') || 'none'}</p>
+      <h3 className="mt-4 hidden text-[13px] font-medium sm:block">What helps {pronoun === 'her' ? 'her' : 'him'}, learned from {pronoun} own days</h3>
+      <div className="mt-2 hidden sm:block"><LearnedBars mean={d.learned.map((l) => l.mean)} sd={d.learned.map((l) => l.sd)} dark={false} highlight={d.plan} /></div>
+      <p className="mt-2 hidden text-[12px] text-ink/50 sm:block">Current plan: {d.plan.map((k) => DOSE_LABEL[k]).join(', ') || 'none'}</p>
 
       <div className="mt-5 flex flex-wrap gap-2">
         {d.action ? (

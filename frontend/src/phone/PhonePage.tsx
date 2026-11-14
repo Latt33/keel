@@ -84,7 +84,7 @@ function BehindTheScenes({ st, prev, sent, items, onPreset, onReset, name }: {
   return (
     <div className="pt-2">
       <h2 className="font-serif text-[clamp(2.2rem,3.8vw,3.4rem)] leading-[1.02]">Three questions a day. The rest happens in the background.</h2>
-      <p className="mt-3 max-w-[36rem] text-[15px] leading-relaxed text-ink/60">
+      <p className="mt-3 hidden max-w-[36rem] text-[15px] leading-relaxed text-ink/60 sm:block">
         {name}’s own model, paused two days into her hard week. Tap the notification on her phone and answer as her, tap a day on her path, or let a whole day answer itself.
         The questions follow the Beck Depression Inventory’s structure, 21 topics over a week, each starting from “about as usual”.
       </p>
@@ -95,7 +95,7 @@ function BehindTheScenes({ st, prev, sent, items, onPreset, onReset, name }: {
       </div>
       <ol className="mt-8">
         {steps.map((s, i) => (
-          <li key={s.key + (sent ? st.day : '')} className={`grid grid-cols-[40px_1fr] gap-3 border-t border-ink/15 py-4 ${sent ? 'fade-in' : ''}`} style={{ animationDelay: `${i * 100}ms` }}>
+          <li key={s.key + (sent ? st.day : '')} className={`${s.key === 'learn' ? 'hidden sm:grid' : 'grid'} grid-cols-[40px_1fr] gap-3 border-t border-ink/15 py-4 ${sent ? 'fade-in' : ''}`} style={{ animationDelay: `${i * 100}ms` }}>
             <span className={`text-[13px] ${s.key === 'clinic' && (st.alert || st.safety) ? 'text-[#c0392b]' : 'text-ink/40'}`}>{String(i + 1).padStart(2, '0')}</span>
             <div>
               <div className="mb-1.5 text-[15px]">{s.title}</div>

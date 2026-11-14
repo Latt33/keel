@@ -70,7 +70,7 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
           <text key={v} x={m.l - 8} y={y(v) + 4} textAnchor="end" className="fill-mist/70 text-[10px]">{v}</text>
         ))}
         {/* x axis: weeks since going home */}
-        {[0, 30, 60, 90, 120, 150, 180].map((v) => (
+        {(W < 520 ? [0, 60, 120, 180] : [0, 30, 60, 90, 120, 150, 180]).map((v) => (
           <text key={v} x={x(v)} y={H - 10} textAnchor="middle" className="fill-mist/70 text-[10px]">{v === 0 ? 'Home' : `day ${v}`}</text>
         ))}
 
