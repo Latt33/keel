@@ -11,6 +11,7 @@ Built at **Junction 2026** for the Aalto NBE challenge *Help people stay well at
 depression treatment*.
 
 <p>
+  <a href="https://keel-q220.onrender.com"><b>Try the live demo</b></a> ·
   <a href="docs/paper/keel.pdf"><b>Read the whitepaper (PDF)</b></a> ·
   <a href="docs/demo.mp4"><b>Watch the 90-second demo</b></a> ·
   <a href="HONESTY.md">What is simulated and what is real</a> ·
@@ -142,7 +143,8 @@ docker build -t keel .
 docker run -p 8000:8000 keel        # then open http://localhost:8000
 ```
 
-On [Render](https://render.com), choose **New → Blueprint** and pick this repository; `render.yaml`
+The live demo runs at https://keel-q220.onrender.com on Render's free plan; the first visit after
+15 idle minutes takes about a minute to wake up. On [Render](https://render.com), choose **New → Blueprint** and pick this repository; `render.yaml`
 sets up a free Docker web service with a health check. Any host that runs a Dockerfile and sets
 `PORT` works the same way (Railway, Fly.io, Google Cloud Run). Each browser tab gets its own copy of
 Aino's phone, so visitors of a shared link don't move each other's patient.
