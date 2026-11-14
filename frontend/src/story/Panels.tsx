@@ -3,7 +3,7 @@ import { DOSE_KEYS, DOSE_LABEL } from '../api'
 import { clamp } from '../lib'
 
 /** What Keel believes each dose does for this person: dot = estimate, bar = uncertainty. */
-export function LearnedBars({ mean, sd, dark = true, highlight }: { mean: number[]; sd: number[]; dark?: boolean; highlight?: string[] }) {
+export function LearnedBars({ mean, sd, dark = true, highlight, you = false }: { mean: number[]; sd: number[]; dark?: boolean; highlight?: string[]; you?: boolean }) {
   const rows = DOSE_KEYS.map((k, i) => ({ k, m: mean[i], s: sd[i] })).sort((a, b) => b.m - a.m)
   const max = 3
   const X = (v: number) => `${clamp((v + 0.5) / (max + 0.5), 0, 1) * 100}%`
@@ -12,7 +12,7 @@ export function LearnedBars({ mean, sd, dark = true, highlight }: { mean: number
       {rows.map((r) => {
         const hl = highlight?.includes(r.k)
         return (
-          <div key={r.k} className="grid grid-cols-[9.5rem_1fr] items-center gap-2 text-[12px]">
+          <div key={r.k} className={`grid ${you ? "grid-cols-[8rem_1fr]" : "grid-cols-[9.5rem_1fr]"} items-center gap-2 text-[12px]`}>
             <span className={`truncate ${hl ? (dark ? 'text-foam font-medium' : 'text-ink font-medium') : dark ? 'text-mist' : 'text-ink/70'}`}>{DOSE_LABEL[r.k]}</span>
             <div className={`relative h-4 rounded-sm ${dark ? 'bg-sea-3/40' : 'bg-ink/5'}`}>
               <div className="absolute top-0 h-full w-px bg-mist/40" style={{ left: X(0) }} />
@@ -24,9 +24,9 @@ export function LearnedBars({ mean, sd, dark = true, highlight }: { mean: number
           </div>
         )
       })}
-      <div className={`grid grid-cols-[9.5rem_1fr] gap-2 text-[10px] ${dark ? 'text-mist/70' : 'text-ink/50'}`}>
+      <div className={`grid ${you ? 'grid-cols-[8rem_1fr]' : 'grid-cols-[9.5rem_1fr]'} gap-2 text-[10px] ${dark ? 'text-mist/70' : 'text-ink/50'}`}>
         <span />
-        <div className="flex justify-between"><span>no effect</span><span>lowers her score by 3 points</span></div>
+        <div className="flex justify-between gap-2"><span>no effect</span><span className="text-right">{you ? 'helps a lot' : 'lowers her score by 3 points'}</span></div>
       </div>
     </div>
   )

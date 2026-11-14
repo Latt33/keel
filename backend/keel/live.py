@@ -11,6 +11,7 @@ import threading
 
 import numpy as np
 
+from . import items as item_bank
 from . import planner
 from .interventions import DIMS, KEYS, N_K, PHQ_SCALE, phq
 from .loop import Loop
@@ -33,6 +34,11 @@ def reset() -> dict:
         _state["loop"] = _new()
         _state["plan"] = _state["loop"].plan_today()
         _state["history"] = []
+        _state["safety"] = False
+        # start every item from where her last days put her, so unasked dimensions carry forward
+        s0 = _state["loop"].log[-1]["s"]
+        _state["items"] = {k: round(float(s0[item_bank.DIMS.index(d)]) * 2) / 2 if d else 0.0
+                           for k, (_, d, _) in item_bank.BY_KEY.items()}
     return snapshot()
 
 
@@ -68,21 +74,29 @@ def snapshot() -> dict:
         "baseline": {k: round(float(L.baseline.mean[i]), 3) for i, k in enumerate(PASSIVE)},
         "alert": bool(L.alerts), "booster_pending": L.world.pending_booster, "streak": L.risk_streak,
         "history": _state.get("history", []),
+        "questions": item_bank.questions_for(L.world.t),
+        "safety": _state.get("safety", False),
     }
 
 
-def checkin(answers: list[float], done: list[str]) -> dict:
-    """answers: 5 sliders 0..3 (mood, interest, sleep, energy, anxiety). done: dose keys ticked."""
+def checkin(answers: dict[str, float], done: list[str]) -> dict:
+    """answers: today's items {key: 0..3} (see items.py). done: dose keys the person did."""
     with _lock:
         L = _loop()
         before = round(L.risk, 3)
         plan = _state["plan"]
+        for k, v in answers.items():
+            if k in item_bank.BY_KEY:
+                _state["items"][k] = float(np.clip(v, 0, 3))
+        if answers.get("safety", 0) >= 1:
+            _state["safety"] = True            # crisis path on the phone + same-day clinic contact
+        dims = item_bank.dims_from_items({k: v for k, v in _state["items"].items() if item_bank.BY_KEY[k][1]})
         done_vec = np.array([1.0 if k in done else 0.0 for k in KEYS])
         L.world.done_override = done_vec
-        rec = L.step(checkin_override=np.clip(np.array(answers, dtype=float), 0, 3), plan=plan, full=True)
+        rec = L.step(checkin_override=dims, plan=plan, full=True)
         L.world.done_override = None
         _state["plan"] = L.plan_today()
-        _state["history"].append({"day": rec["day"], "phq": round(float(phq(np.array(answers))), 1),
+        _state["history"].append({"day": rec["day"], "phq": round(float(phq(dims)), 1), "answers": answers,
                                   "risk_before": before, "risk_after": round(L.risk, 3), "done": done})
     out = snapshot()
     out["changed"] = {"risk_before": before, "risk_after": round(L.risk, 3)}

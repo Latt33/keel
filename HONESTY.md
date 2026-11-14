@@ -27,7 +27,7 @@ Built with heavy AI assistance (Claude) for code and copy, directed and reviewed
 | Relapse rates of the untreated cohort are fit to Senova et al. 2019 (rTMS durability meta-analysis) | `sim.py` constants, `tests/test_model.py` | Anchor the simulator to published numbers | Clinic’s own follow-up data |
 | Ring signals are generated from the hidden symptom state; that they move *before* mood is an assumption based on Tonon et al. 2026 (actigraphy and relapse) | `sim.py` `passive_from`, `A_FAST` vs `A_SLOW` | Make the early-warning mechanism explicit and testable | Real Oura / Fitbit data; refit `forecast_weights.json` |
 | Forecast weights (ring → PHQ points) are fit on the simulator, R² 0.92. Optimistic | `scripts/calibrate_forecast.py` | No real paired data | Refit on real data; PSYCHE-D shows the population floor (AUC 0.60) |
-| Check-in uses 5 PHQ-style items scaled to the 0–27 PHQ-9 range. It is not the validated PHQ-9 | `interventions.py` | 60-second daily burden | Validated daily items (e.g. PHQ-2 + sleep/energy items), weekly full PHQ-9 |
+| Check-in: 21 domains in the structure of the Beck Depression Inventory (4 statements, scored 0–3), 3 a day on a 7-day rotation. The wording is our own, not the copyrighted BDI-II text, and is not validated. Answers map onto 5 latent dimensions on a PHQ-9-equivalent scale | `backend/keel/items.py` | Low burden, neutral wording | Licensed BDI-II items and a validation study |
 | Effects of the six doses (0.5–1.4 PHQ points each, population prior) are hand-set, not taken from trials | `interventions.py` | Plausible, modest sizes | Literature priors per dose; the learner then personalises |
 | Booster effect (5 sessions restore 80 % of lost TMS benefit plus a fading acute effect) is hand-set | `sim.py` `BOOST_*` | Rescue maintenance is supported in the literature but effect sizes vary | Clinic protocol and outcome data |
 | Aino is seed 520, chosen because both of her worlds show the typical pattern clearly (relapse at day 60–95 without support, one early warning with Keel). Cohort numbers come from all 300 patients | `story.py`, `/tmp` search script described here | A clear demo story | n/a |
@@ -60,6 +60,18 @@ warnings will be wrong. So:
 * The crisis line is always visible.
 
 This should be tested with patients and clinicians before any real use.
+
+## Self-harm item
+
+One weekly item asks about thoughts of self-harm (as in the BDI). Any answer above "I haven't had thoughts of harming myself" immediately shows crisis numbers on the phone and asks the clinic to call the same day. This path does not depend on the model. In the demo the "clinic call" is a message in the presenter panel only.
+
+## Explainability (whitepaper, `docs/paper/keel.pdf`)
+
+* Reasons on the clinic list are exact additive (Shapley) attributions of the linear body-signal model against the person's own baseline.
+* The global SHAP figure explains a gradient-boosted surrogate trained on simulated patient-days. It shows the simulator's associations; on real data it is a hypothesis. Activity exposures get positive SHAP values because the planner prescribes more when risk is already high (confounding by indication), not because activities cause relapse.
+* The PSYCHE-D SHAP figure is real data.
+* Konsta Kiirikki's e-mail in the paper is assumed to follow the firstname.lastname@aalto.fi pattern; check it.
+* The paper's code link (github.com/Latt33/keel) assumes the repo will be published there.
 
 ## Known limitations
 

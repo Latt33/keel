@@ -1,245 +1,313 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { api, DOSE_KEYS, DOSE_LABEL, type LiveState, type Story } from '../api'
 import MiniForecast from '../charts/MiniForecast'
 import { riskColor } from '../lib'
 import { LearnedBars } from '../story/Panels'
 
-const QUESTIONS = [
-  { label: 'Feeling down', low: 'not at all', high: 'all day' },
-  { label: 'Little interest in things', low: 'not at all', high: 'nothing appeals' },
-  { label: 'Sleep was poor', low: 'slept well', high: 'barely slept' },
-  { label: 'Tired, low energy', low: 'full of energy', high: 'exhausted' },
-  { label: 'Worried, on edge', low: 'calm', high: 'constantly' },
-]
-const GOOD = [0.5, 0.5, 0.5, 0.5, 0.5]
-const BAD = [2, 2, 1.5, 2, 1.5]
+interface Item { key: string; domain: string; dim: string | null; statements: string[] }
+type Screen = 'home' | 'checkin' | 'thanks' | 'insights'
 
 export default function PhonePage({ story }: { story: Story }) {
   const [st, setSt] = useState<LiveState | null>(null)
   const [prev, setPrev] = useState<LiveState | null>(null)
-  const [answers, setAnswers] = useState<number[]>(GOOD)
-  const [done, setDone] = useState<string[]>([])
-  const [busy, setBusy] = useState(false)
+  const [items, setItems] = useState<Record<string, Item>>({})
+  const [screen, setScreen] = useState<Screen>('home')
+  const [banner, setBanner] = useState(false)
   const [sent, setSent] = useState(false)
-  const [showOutlook, setShowOutlook] = useState(false)
-  const screen = useRef<HTMLDivElement>(null)
-  useEffect(() => { api.live().then(setSt) }, [])
-  useEffect(() => { if (st) setDone(st.plan.slice(0, 1)) }, [st?.day]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    api.live().then(setSt)
+    fetch('/api/items').then((r) => r.json()).then((d) => setItems(Object.fromEntries(d.items.map((i: Item) => [i.key, i]))))
+  }, [])
+  // the check-in arrives as a notification, a moment after the phone is opened
+  useEffect(() => {
+    if (screen !== 'home' || !st) return
+    const t = setTimeout(() => setBanner(true), 900)
+    return () => clearTimeout(t)
+  }, [screen, st?.day]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const send = async () => {
+  const submit = async (answers: Record<string, number>, done: string[]) => {
     if (!st) return
-    setBusy(true)
     const before = st
     const nxt = await api.checkin(answers, done)
-    setPrev(before); setSt(nxt); setBusy(false); setSent(true)
-    screen.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    setPrev(before); setSt(nxt); setSent(true); setBanner(false)
+    return nxt
   }
-  const reset = async () => { const s = await api.reset(); setPrev(null); setSt(s); setSent(false); setAnswers(GOOD) }
+  const preset = async (hard: boolean) => {
+    if (!st) return
+    const answers = Object.fromEntries(st.questions.map((k) => [k, k === 'safety' ? 0 : hard ? 2 : 0]))
+    await submit(answers, hard ? [] : st.plan.slice(0, 1))
+    setScreen('thanks')
+  }
+  const reset = async () => { const s = await api.reset(); setPrev(null); setSt(s); setSent(false); setScreen('home') }
 
-  if (!st) return <div className="p-8 text-ink/60">Opening Aino’s phone…</div>
+  if (!st || !Object.keys(items).length) return <div className="p-8 text-ink/60">Opening Aino’s phone…</div>
   const name = story.profile.name
   return (
-    <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-10 px-6 py-8 lg:grid-cols-[400px_1fr]">
-      <Phone screenRef={screen}>
-        <div className="flex items-baseline justify-between">
-          <h2 className="font-serif text-[26px] leading-tight">Good evening, {name}</h2>
-          <span className="text-[12px] text-ink/50">day {st.day} at home</span>
-        </div>
-
-        {st.alert && (
-          <section className="fade-in mt-4 rounded-2xl bg-ink p-4 text-fog">
-            <div className="text-[11px] text-fog/60">Espoo TMS clinic</div>
-            <p className="mt-1 text-[14px] leading-snug">Hi {name}, Liisa here from the clinic. I’d like to check in with you, so I’ll give you a call tomorrow morning. Nothing you need to prepare.</p>
-          </section>
-        )}
-
-        <YourWeek st={st} prev={prev} />
-
-        <section className="mt-4 rounded-2xl bg-white p-4">
-          <label className="flex cursor-pointer items-center justify-between gap-3">
-            <span>
-              <span className="block text-[14px] font-medium">Show my two-week outlook</span>
-              <span className="block text-[12px] text-ink/50">Off unless you and your clinician choose to turn it on.</span>
-            </span>
-            <input type="checkbox" checked={showOutlook} onChange={() => setShowOutlook(!showOutlook)} className="h-5 w-5 accent-[#2e8c73]" />
-          </label>
-          {showOutlook && (
-            <div className="fade-in mt-3">
-              <MiniForecast trend={st.trend} fan={st.fan} risk={st.risk} height={110} gentle />
-              <p className="text-[12px] leading-snug text-ink/60">
-                {st.tier === 'steady' ? 'Looks steady for the next two weeks.' : 'The next two weeks look less settled than usual. This is a forecast, not a diagnosis, and it often turns out fine.'}
-              </p>
-            </div>
-          )}
-        </section>
-
-        <section className="mt-4 rounded-2xl bg-white p-4">
-          <h3 className="mb-2 text-[14px] font-medium">Today’s plan</h3>
-          <ul className="space-y-2">
-            {st.plan.map((k) => {
-              const i = DOSE_KEYS.indexOf(k)
-              const m = st.learned.mean[i], sd = st.learned.sd[i]
-              const on = done.includes(k)
-              const meta = story.interventions.find((v) => v.key === k)!
-              return (
-                <li key={k}>
-                  <label className="flex cursor-pointer items-start gap-3 rounded-xl p-2 hover:bg-fog/60">
-                    <input type="checkbox" checked={on} onChange={() => setDone(on ? done.filter((x) => x !== k) : [...done, k])}
-                      className="mt-0.5 h-5 w-5 accent-[#2e8c73]" />
-                    <span>
-                      <span className="block text-[14px] font-medium">{DOSE_LABEL[k]} <span className="font-normal text-ink/50">· {meta.minutes} min</span></span>
-                      <span className="block text-[12px] text-ink/60">{meta.detail}</span>
-                      <span className="mt-0.5 block text-[12px] text-[#2e8c73]">
-                        {sd > 0.6 ? 'Still finding out if this helps you.' : m > 0.4 ? `On days you do this, you score about ${m.toFixed(1)} points better.` : 'Seems to do little for you, so it comes up less.'}
-                      </span>
-                    </span>
-                  </label>
-                </li>
-              )
-            })}
-          </ul>
-        </section>
-
-        <section className="mt-4 rounded-2xl bg-white p-4">
-          <div className="mb-1 flex items-center justify-between">
-            <h3 className="text-[14px] font-medium">How was today?</h3>
-            <span className="text-[11px] text-ink/40">about a minute</span>
-          </div>
-          {QUESTIONS.map((q, i) => (
-            <div key={q.label} className="py-2">
-              <div className="mb-1.5 text-[13px]">{q.label}</div>
-              <input type="range" min={0} max={3} step={0.5} value={answers[i]} aria-label={q.label} className="slider w-full"
-                onChange={(e) => { const a = answers.slice(); a[i] = Number(e.target.value); setAnswers(a) }} />
-              <div className="mt-1 flex justify-between text-[11px] text-ink/40"><span>{q.low}</span><span>{q.high}</span></div>
-            </div>
-          ))}
-          <button onClick={send} disabled={busy} className="mt-3 w-full rounded-full bg-ink py-3 text-[15px] font-medium text-fog disabled:opacity-60">
-            {busy ? 'Sending…' : 'Send check-in'}
+    <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-start gap-12 px-6 py-8 lg:grid-cols-[400px_1fr]">
+      <Phone>
+        {banner && screen === 'home' && (
+          <button onClick={() => { setBanner(false); setScreen('checkin') }}
+            className="fade-in absolute left-3 right-3 top-9 z-20 rounded-[18px] bg-white/95 p-3 text-left shadow-[0_8px_30px_rgba(0,0,0,.18)] backdrop-blur">
+            <div className="flex items-center justify-between text-[11px] text-ink/50"><span>Keel</span><span>now</span></div>
+            <div className="mt-0.5 text-[14px] text-ink">Three quick questions</div>
+            <div className="text-[13px] text-ink/60">Under a minute.</div>
           </button>
-        </section>
-
-        <a href="tel:0925250111" className="mt-4 block rounded-2xl border border-storm/40 bg-storm/5 p-3 text-center text-[13px] text-ink">
-          Need to talk to someone now? <span className="font-medium">MIELI crisis line 09 2525 0111</span>. Emergency: 112.
-        </a>
+        )}
+        {screen === 'home' && <Home st={st} story={story} name={name} onInsights={() => setScreen('insights')} />}
+        {screen === 'checkin' && (
+          <CheckIn st={st} items={items} onDone={async (a, d) => { await submit(a, d); setScreen('thanks') }} onCancel={() => setScreen('home')} />
+        )}
+        {screen === 'thanks' && <Thanks st={st} onHome={() => setScreen('home')} onInsights={() => setScreen('insights')} />}
+        {screen === 'insights' && <Insights st={st} prev={prev} onBack={() => setScreen('home')} />}
       </Phone>
 
-      <BehindTheScenes st={st} prev={prev} sent={sent} onPreset={(bad) => setAnswers(bad ? BAD : GOOD)} onReset={reset} name={name} />
+      <BehindTheScenes st={st} prev={prev} sent={sent} items={items} onPreset={preset} onReset={reset} name={name} />
     </div>
   )
 }
 
-const WEEK_SIGNALS = [
-  { k: 'sleep_regularity', label: 'Regular sleep', word: 'sleep rhythm', up: true },
-  { k: 'rhythm_strength', label: 'Active days, quiet nights', word: 'day/night rhythm', up: true },
-  { k: 'steps', label: 'Moving', word: 'activity', up: true },
-]
-
-/** What the patient sees instead of a risk number: her week against her own usual, and what to do about it. */
-function YourWeek({ st, prev }: { st: LiveState; prev: LiveState | null }) {
-  const rows = WEEK_SIGNALS.map((s) => {
-    const base = st.baseline[s.k], now = st.week[s.k]
-    const rel = base ? now / base : 1
-    return { ...s, rel, off: rel < 0.9 }
-  })
-  const worst = rows.filter((r) => r.off).sort((a, b) => a.rel - b.rel)[0]
-  const added = prev ? st.plan.filter((k) => !prev.plan.includes(k)) : []
-  const tip = added[0] ?? st.plan[0]
-  const i = DOSE_KEYS.indexOf(tip)
-  const helped = i >= 0 && st.learned.sd[i] <= 0.6 && st.learned.mean[i] > 0.4
+function Phone({ children }: { children: React.ReactNode }) {
   return (
-    <section className="mt-4 rounded-2xl bg-white p-4 shadow-[0_1px_0_rgba(20,34,49,.06)]">
-      <h3 className="text-[14px] font-medium">Your week, against your usual</h3>
-      <div className="mt-3 space-y-2.5">
-        {rows.map((r) => (
-          <div key={r.k}>
-            <div className="mb-1 flex justify-between text-[12px]"><span className="text-ink/70">{r.label}</span><span className="text-ink/40">{r.off ? 'less than usual' : 'like usual'}</span></div>
-            <div className="relative h-2 rounded-full bg-ink/5">
-              <div className="absolute top-0 h-2 rounded-full bg-[#2e8c73]/70 transition-all duration-500" style={{ width: `${Math.min(100, r.rel * 80)}%` }} />
-              <div className="absolute top-[-3px] h-[14px] w-px bg-ink/40" style={{ left: '80%' }} title="your usual" />
-            </div>
-          </div>
-        ))}
-      </div>
-      <p className="mt-3 text-[13px] leading-snug text-ink/70">
-        {worst
-          ? <>Your {worst.word} has been a bit off this week. That happens. {tip ? <>Tomorrow’s plan includes <b className="font-medium text-ink">{DOSE_LABEL[tip].toLowerCase()}</b>{helped ? ', which has helped you before.' : '.'}</> : null}</>
-          : 'Your sleep and activity look like your usual. Keep the small habits going.'}
-      </p>
-    </section>
-  )
-}
-
-function Phone({ children, screenRef }: { children: React.ReactNode; screenRef: React.RefObject<HTMLDivElement | null> }) {
-  return (
-    <div className="mx-auto w-[390px] max-w-full rounded-[44px] bg-ink p-3 shadow-2xl">
-      <div ref={screenRef} className="relative h-[min(800px,calc(100vh-120px))] overflow-y-auto rounded-[34px] bg-fog px-5 pb-6 pt-10">
-        <div className="absolute left-1/2 top-3 h-5 w-24 -translate-x-1/2 rounded-full bg-ink" />
+    <div className="mx-auto w-[390px] max-w-full rounded-[48px] bg-ink p-3">
+      <div className="relative h-[min(780px,calc(100vh-130px))] overflow-y-auto rounded-[38px] bg-[#f6f6f4] px-6 pb-8 pt-14 text-ink">
+        <div className="absolute left-1/2 top-3 h-6 w-24 -translate-x-1/2 rounded-full bg-ink" />
         {children}
       </div>
     </div>
   )
 }
 
-function BehindTheScenes({ st, prev, sent, onPreset, onReset, name }: {
-  st: LiveState; prev: LiveState | null; sent: boolean; onPreset: (bad: boolean) => void; onReset: () => void; name: string
+function Crisis() {
+  return (
+    <a href="tel:0925250111" className="mb-5 block rounded-2xl bg-ink p-4 text-fog">
+      <div className="text-[15px]">Thank you for telling us. You don’t have to handle this alone.</div>
+      <div className="mt-2 text-[13px] text-fog/75">Your care team will call you today. If you need someone right now: MIELI crisis line 09 2525 0111, or 112 in an emergency.</div>
+    </a>
+  )
+}
+
+function Home({ st, story, name, onInsights }: { st: LiveState; story: Story; name: string; onInsights: () => void }) {
+  const tip = st.plan[0]
+  const meta = story.interventions.find((v) => v.key === tip)
+  const [done, setDone] = useState(false)
+  return (
+    <div>
+      {st.safety && <Crisis />}
+      <div className="text-[13px] text-ink/45">Day {st.day} at home</div>
+      <h2 className="font-serif mt-1 text-[34px] leading-[1.05]">Hi {name}.</h2>
+
+      {st.alert && !st.safety && (
+        <div className="fade-in mt-6 border-t border-ink/15 pt-4">
+          <div className="text-[12px] text-ink/45">Liisa, Espoo TMS clinic</div>
+          <p className="mt-1 text-[15px] leading-snug">I’d like to check in with you, so I’ll call tomorrow morning. Nothing you need to prepare.</p>
+        </div>
+      )}
+
+      {meta && (
+        <div className="mt-8 border-t border-ink/15 pt-4">
+          <div className="text-[12px] text-ink/45">Today, if it fits</div>
+          <div className="mt-1 flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[19px] leading-tight tracking-[-0.02em]">{meta.label}</div>
+              <div className="mt-1 text-[13px] leading-snug text-ink/55">{meta.detail}</div>
+            </div>
+            <button onClick={() => setDone(!done)} aria-pressed={done}
+              className={`shrink-0 rounded-full border px-3 py-1 text-[13px] ${done ? 'border-ink bg-ink text-fog' : 'border-ink/40'}`}>{done ? 'Done' : 'Mark done'}</button>
+          </div>
+        </div>
+      )}
+
+      <button onClick={onInsights} className="mt-8 w-full border-t border-ink/15 pt-4 text-left">
+        <div className="text-[12px] text-ink/45">Whenever you want to look</div>
+        <div className="mt-1 text-[17px] tracking-[-0.02em] underline decoration-1 underline-offset-4">What has been helping you</div>
+      </button>
+    </div>
+  )
+}
+
+function CheckIn({ st, items, onDone, onCancel }: {
+  st: LiveState; items: Record<string, Item>; onDone: (a: Record<string, number>, done: string[]) => void; onCancel: () => void
 }) {
-  const last = st.history[st.history.length - 1]
+  const qs = st.questions
+  const [i, setI] = useState(0)
+  const [ans, setAns] = useState<Record<string, number>>({})
+  const [safetyShown, setSafetyShown] = useState(false)
+  const tip = st.plan[0]
+  const total = qs.length + (tip ? 1 : 0)
+  if (safetyShown) return (
+    <div className="fade-in">
+      <Crisis />
+      <button onClick={() => { setSafetyShown(false); setI(i + 1) }} className="mt-2 rounded-full border border-ink px-5 py-2 text-[14px]">Continue</button>
+    </div>
+  )
+  if (i < qs.length) {
+    const it = items[qs[i]]
+    return (
+      <div key={it.key} className="fade-in">
+        <Progress i={i} n={total} onCancel={onCancel} />
+        <div className="mt-6 text-[13px] text-ink/50">{it.domain}</div>
+        <h3 className="font-serif mt-1 text-[24px] leading-[1.1]">Which fits today best?</h3>
+        <div className="mt-5 border-t border-ink/15">
+          {it.statements.map((s, v) => (
+            <button key={v} onClick={() => {
+              const a = { ...ans, [it.key]: v }
+              setAns(a)
+              if (it.key === 'safety' && v >= 1) setSafetyShown(true)
+              else setI(i + 1)
+            }} className="block w-full border-b border-ink/15 py-3.5 text-left text-[15px] leading-snug hover:bg-ink/[.03]">{s}</button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  if (tip) return (
+    <div className="fade-in">
+      <Progress i={qs.length} n={total} onCancel={onCancel} />
+      <div className="mt-6 text-[13px] text-ink/50">Today’s suggestion</div>
+      <h3 className="font-serif mt-1 text-[24px] leading-[1.1]">Did you get to: {DOSE_LABEL[tip].toLowerCase()}?</h3>
+      <div className="mt-5 border-t border-ink/15">
+        <button onClick={() => onDone(ans, [tip])} className="block w-full border-b border-ink/15 py-3.5 text-left text-[15px]">Yes</button>
+        <button onClick={() => onDone(ans, [])} className="block w-full border-b border-ink/15 py-3.5 text-left text-[15px]">Not today</button>
+      </div>
+    </div>
+  )
+  onDone(ans, [])
+  return null
+}
+
+function Progress({ i, n, onCancel }: { i: number; n: number; onCancel: () => void }) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex gap-1.5">{Array.from({ length: n }).map((_, k) => <span key={k} className={`h-1 w-6 rounded-full ${k <= i ? 'bg-ink' : 'bg-ink/15'}`} />)}</div>
+      <button onClick={onCancel} className="text-[13px] text-ink/45">Later</button>
+    </div>
+  )
+}
+
+function Thanks({ st, onHome, onInsights }: { st: LiveState; onHome: () => void; onInsights: () => void }) {
+  return (
+    <div className="fade-in">
+      {st.safety && <Crisis />}
+      <h2 className="font-serif mt-10 text-[34px] leading-[1.05]">Thanks. That’s all for today.</h2>
+      <p className="mt-3 text-[15px] text-ink/55">See you tomorrow.</p>
+      <div className="mt-10 flex gap-2">
+        <button onClick={onHome} className="rounded-full bg-ink px-5 py-2 text-[14px] text-fog">Close</button>
+        <button onClick={onInsights} className="rounded-full border border-ink px-5 py-2 text-[14px]">What has been helping</button>
+      </div>
+    </div>
+  )
+}
+
+const WEEK_SIGNALS = [
+  { k: 'sleep_regularity', label: 'Regular sleep' },
+  { k: 'rhythm_strength', label: 'Active days, quiet nights' },
+  { k: 'steps', label: 'Moving' },
+]
+
+function Insights({ st, onBack }: { st: LiveState; prev: LiveState | null; onBack: () => void }) {
+  const [showOutlook, setShowOutlook] = useState(false)
+  const helps = DOSE_KEYS.map((k, i) => ({ k, m: st.learned.mean[i], sd: st.learned.sd[i] })).filter((r) => r.m > 0.6 && r.sd < 0.8).sort((a, b) => b.m - a.m)
+  return (
+    <div className="fade-in">
+      <button onClick={onBack} className="text-[13px] text-ink/50">Back</button>
+      <h2 className="font-serif mt-3 text-[30px] leading-[1.05]">What has been helping you</h2>
+      <p className="mt-2 text-[13px] leading-snug text-ink/55">Learned from your own days since you came home. It keeps updating.</p>
+
+      <div className="mt-6 border-t border-ink/15 pt-4">
+        <div className="mb-2 text-[12px] text-ink/45">On days you do these, you tend to feel better</div>
+        <LearnedBars mean={st.learned.mean} sd={st.learned.sd} dark={false} highlight={helps.slice(0, 2).map((h) => h.k)} you />
+      </div>
+
+      <div className="mt-6 border-t border-ink/15 pt-4">
+        <div className="mb-3 text-[12px] text-ink/45">This week, against your usual</div>
+        {WEEK_SIGNALS.map((s) => {
+          const rel = st.baseline[s.k] ? st.week[s.k] / st.baseline[s.k] : 1
+          return (
+            <div key={s.k} className="mb-2.5">
+              <div className="mb-1 flex justify-between text-[12px]"><span className="text-ink/70">{s.label}</span><span className="text-ink/40">{rel < 0.9 ? 'less than usual' : 'like usual'}</span></div>
+              <div className="relative h-1.5 rounded-full bg-ink/10">
+                <div className="absolute top-0 h-1.5 rounded-full bg-ink/70 transition-all duration-500" style={{ width: `${Math.min(100, rel * 80)}%` }} />
+                <div className="absolute top-[-4px] h-[14px] w-px bg-ink/50" style={{ left: '80%' }} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <label className="mt-6 flex cursor-pointer items-center justify-between gap-3 border-t border-ink/15 pt-4">
+        <span>
+          <span className="block text-[14px]">Show my two-week outlook</span>
+          <span className="block text-[12px] text-ink/50">Off unless you and your clinician turn it on.</span>
+        </span>
+        <input type="checkbox" checked={showOutlook} onChange={() => setShowOutlook(!showOutlook)} className="h-5 w-5 accent-[#0a0e10]" />
+      </label>
+      {showOutlook && (
+        <div className="fade-in mt-3">
+          <MiniForecast trend={st.trend} fan={st.fan} risk={st.risk} height={110} gentle />
+          <p className="text-[12px] leading-snug text-ink/55">{st.tier === 'steady' ? 'Looks steady for the next two weeks.' : 'The next two weeks look less settled than usual. This is a forecast, not a diagnosis, and it often turns out fine.'}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function BehindTheScenes({ st, prev, sent, items, onPreset, onReset, name }: {
+  st: LiveState; prev: LiveState | null; sent: boolean; items: Record<string, Item>; onPreset: (hard: boolean) => void; onReset: () => void; name: string
+}) {
+  const last = st.history[st.history.length - 1] as (LiveState['history'][number] & { answers?: Record<string, number> }) | undefined
   const added = useMemo(() => (prev ? st.plan.filter((k) => !prev.plan.includes(k)) : []), [st, prev])
-  const removed = useMemo(() => (prev ? prev.plan.filter((k) => !st.plan.includes(k)) : []), [st, prev])
   const steps = [
     {
-      key: 'sense', title: 'Sense', body: (
-        <div className="text-[13px] text-ink/70">
-          {last ? <>Check-in score <b className="text-ink">{last.phq.toFixed(0)}</b> of 27 · ring: sleep regularity <b className="text-ink">{st.passive.sleep_regularity.toFixed(0)}</b>, steps <b className="text-ink">{Math.round(st.passive.steps).toLocaleString('en')}</b></> : 'Waiting for tonight’s check-in. The ring keeps sending sleep and activity.'}
-        </div>
-      ),
+      key: 'sense', title: 'Sense', body: last?.answers ? (
+        <ul className="space-y-1 text-[13px] text-ink/75">
+          {Object.entries(last.answers).map(([k, v]) => <li key={k}><span className="text-ink/45">{items[k]?.domain}:</span> “{items[k]?.statements[v]}”</li>)}
+          <li className="text-ink/45">Ring: sleep regularity {st.passive.sleep_regularity.toFixed(0)}, steps {Math.round(st.passive.steps).toLocaleString('en')}</li>
+        </ul>
+      ) : <div className="text-[13px] text-ink/60">Waiting for today’s three questions. The ring keeps sending sleep and activity.</div>,
     },
     {
       key: 'forecast', title: 'Forecast', body: (
-        <div className="flex items-center gap-2 text-[13px]">
+        <div className="flex flex-wrap items-center gap-2 text-[13px]">
           {prev && <><RiskPill r={prev.risk} /><span className="text-ink/40">to</span></>}
           <RiskPill r={st.risk} />
-          <span className="text-ink/60">chance of relapse in 2 weeks · only her care team sees this</span>
+          <span className="text-ink/60">chance of relapse in 2 weeks. Only her care team sees this.</span>
         </div>
       ),
     },
     {
       key: 'plan', title: 'Plan tomorrow', body: (
-        <div className="flex flex-wrap items-center gap-1.5 text-[12px]">
-          {st.plan.map((k) => (
-            <span key={k} className={`rounded-full px-2.5 py-1 ${added.includes(k) ? 'bg-squall/30 text-ink' : 'bg-ink/5 text-ink/80'}`}>{added.includes(k) ? '+ ' : ''}{DOSE_LABEL[k]}</span>
-          ))}
-          {removed.map((k) => <span key={k} className="rounded-full px-2.5 py-1 text-ink/40 line-through">{DOSE_LABEL[k]}</span>)}
-        </div>
+        <div className="text-[13px] text-ink/75">{st.plan.map((k) => (added.includes(k) ? `+ ${DOSE_LABEL[k]}` : DOSE_LABEL[k])).join(' · ')}</div>
       ),
     },
     { key: 'learn', title: 'Learn', body: <LearnedBars mean={st.learned.mean} sd={st.learned.sd} dark={false} highlight={st.plan} /> },
     {
       key: 'clinic', title: 'Clinic', body: (
-        <div className={`text-[13px] ${st.alert ? 'font-medium text-storm' : 'text-ink/60'}`}>
-          {st.alert ? `${name} is on this week’s call list. A booster block is suggested for day ${st.booster_pending ?? '–'}.` : st.tier === 'steady' ? 'Nothing to send. Her nurse sees a quiet week.' : `Watching. ${Math.min(st.streak, 3)} of 3 high-risk days in a row before her nurse is told.`}
+        <div className={`text-[13px] ${st.alert || st.safety ? 'text-[#c0392b]' : 'text-ink/60'}`}>
+          {st.safety ? `${name} answered the self-harm question. Her nurse is asked to call her today.`
+            : st.alert ? `${name} is on this week’s call list. A booster block is suggested for day ${st.booster_pending ?? '–'}.`
+              : st.tier === 'steady' ? 'Nothing to send. Her nurse sees a quiet week.' : `Watching. ${Math.min(st.streak, 3)} of 3 high-risk days in a row before her nurse is told.`}
         </div>
       ),
     },
   ]
   return (
     <div className="pt-2">
-      <h2 className="font-serif text-[clamp(2.2rem,3.8vw,3.4rem)] leading-[1.02]">Every check-in closes the loop.</h2>
-      <p className="mt-2 max-w-[34rem] text-[15px] leading-relaxed text-ink/60">
-        This is {name}’s own model, paused on day {st.day - st.history.length}, two days into her hard week. Her ring has started to notice; she has not said anything yet. Answer as her and watch what changes. The phone shows her what she can do; the risk goes to her care team.
+      <h2 className="font-serif text-[clamp(2.2rem,3.8vw,3.4rem)] leading-[1.02]">Three questions a day. The rest happens in the background.</h2>
+      <p className="mt-3 max-w-[36rem] text-[15px] leading-relaxed text-ink/60">
+        {name}’s own model, paused two days into her hard week. Open the notification on her phone and answer as her, or let a whole day answer itself.
+        The questions follow the Beck Depression Inventory’s structure, 21 topics over a week, each starting from “about as usual”.
       </p>
-      <div className="mt-4 flex flex-wrap gap-2 text-[13px]">
-        <button onClick={() => onPreset(false)} className="rounded-full border border-ink px-4 py-2 hover:bg-ink hover:text-fog">Answer as a good day</button>
-        <button onClick={() => onPreset(true)} className="rounded-full border border-ink px-4 py-2 hover:bg-ink hover:text-fog">Answer as a bad day</button>
-        <button onClick={onReset} className="rounded-full px-3 py-1.5 text-ink/50 hover:text-ink">Start over</button>
+      <div className="mt-5 flex flex-wrap gap-2 text-[14px]">
+        <button onClick={() => onPreset(false)} className="rounded-full border border-ink px-4 py-2 hover:bg-ink hover:text-fog">A steady day</button>
+        <button onClick={() => onPreset(true)} className="rounded-full border border-ink px-4 py-2 hover:bg-ink hover:text-fog">A harder day</button>
+        <button onClick={onReset} className="rounded-full px-4 py-2 text-ink/50 hover:text-ink">Start over</button>
       </div>
-      <ol className="relative mt-6 space-y-3">
-        <div className="absolute bottom-6 left-[15px] top-6 w-px bg-ink/15" />
+      <ol className="mt-8">
         {steps.map((s, i) => (
-          <li key={s.key + (sent ? st.day : '')} className={`relative grid grid-cols-[32px_1fr] gap-3 ${sent ? 'fade-in' : ''}`} style={{ animationDelay: `${i * 120}ms` }}>
-            <span className={`z-10 flex h-8 w-8 items-center justify-center rounded-full border text-[13px] ${s.key === 'clinic' && st.alert ? 'pulse-ring border-storm bg-storm text-white' : 'border-ink/30 bg-fog text-ink'}`}>{i + 1}</span>
-            <div className="border-t border-ink/15 pt-3">
-              <div className="mb-1.5 text-[13px] font-medium">{s.title}</div>
+          <li key={s.key + (sent ? st.day : '')} className={`grid grid-cols-[40px_1fr] gap-3 border-t border-ink/15 py-4 ${sent ? 'fade-in' : ''}`} style={{ animationDelay: `${i * 100}ms` }}>
+            <span className={`text-[13px] ${s.key === 'clinic' && (st.alert || st.safety) ? 'text-[#c0392b]' : 'text-ink/40'}`}>{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <div className="mb-1.5 text-[15px]">{s.title}</div>
               {s.body}
             </div>
           </li>
@@ -252,5 +320,5 @@ function BehindTheScenes({ st, prev, sent, onPreset, onReset, name }: {
 const pctText = (r: number) => (r > 0.95 ? 'over 95%' : r < 0.02 ? 'under 2%' : `${Math.round(r * 100)}%`)
 
 function RiskPill({ r }: { r: number }) {
-  return <span className="rounded-full px-2.5 py-0.5 font-medium tabular-nums text-sea" style={{ background: riskColor(r) }}>{pctText(r)}</span>
+  return <span className="rounded-full px-2.5 py-0.5 tabular-nums text-sea" style={{ background: riskColor(r) }}>{pctText(r)}</span>
 }

@@ -44,7 +44,8 @@ export interface LiveState {
   contrib: Record<string, number>; passive: Record<string, number>
   week: Record<string, number>; baseline: Record<string, number>
   alert: boolean; booster_pending: number | null; streak: number
-  history: { day: number; phq: number; risk_before: number; risk_after: number; done: string[] }[]
+  questions: string[]; safety: boolean
+  history: { day: number; phq: number; risk_before: number; risk_after: number; done: string[]; answers?: Record<string, number> }[]
   changed?: { risk_before: number; risk_after: number }
 }
 
@@ -73,7 +74,7 @@ const post = (body: unknown): RequestInit => ({ method: 'POST', headers: { 'Cont
 export const api = {
   story: () => j<Story>('/api/story'),
   live: () => j<LiveState>('/api/live'),
-  checkin: (answers: number[], done: string[]) => j<LiveState>('/api/live/checkin', post({ answers, done })),
+  checkin: (answers: Record<string, number>, done: string[]) => j<LiveState>('/api/live/checkin', post({ answers, done })),
   reset: () => j<LiveState>('/api/live/reset', post({})),
   clinic: () => j<ClinicRow[]>('/api/clinic'),
   clinicDetail: (id: string) => j<ClinicDetail>(`/api/clinic/${id}`),

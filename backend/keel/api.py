@@ -9,14 +9,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import clinic, live, oura, simulate, story
+from . import clinic, items, live, oura, simulate, story
 
 app = FastAPI(title="Keel", version="0.1")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 
 class CheckIn(BaseModel):
-    answers: list[float] = Field(..., min_length=5, max_length=5)
+    answers: dict[str, float] = Field(..., min_length=1, max_length=21)
     done: list[str] = []
 
 
@@ -32,6 +32,11 @@ def health():
 @app.get("/api/story")
 def get_story():
     return story.build()
+
+
+@app.get("/api/items")
+def get_items():
+    return {"items": items.public(), "rotation": items.ROTATION}
 
 
 @app.get("/api/live")

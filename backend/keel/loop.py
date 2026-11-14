@@ -94,6 +94,8 @@ class Loop:
                 "plan": [KEYS[k] for k in np.flatnonzero(plan)], "done": [KEYS[k] for k in np.flatnonzero(o["done"])],
                 "passive": {k: round(v, 3) for k, v in o["passive"].items()},
                 "contrib": dict(zip(PASSIVE, np.round(self.tracker.contrib, 3).tolist())),
+                "zs": np.round(self.tracker.zs, 4).tolist(),
+                "checkin_dims": None if o["checkin"] is None else np.round(o["checkin"], 3).tolist(),
                 "fan": {k: [round(x, 2) for x in fc[k]] for k in ("p10", "p50", "p90")},
                 "life_event": o["life_event"], "booster_pending": self.world.pending_booster,
                 "learned": {"mean": self.post.mean.round(3).tolist(), "sd": self.post.sd.round(3).tolist()},

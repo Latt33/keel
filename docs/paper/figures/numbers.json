@@ -1,0 +1,113 @@
+{
+  "aino": {
+    "life_event": [
+      53,
+      82,
+      83
+    ],
+    "alert": 59,
+    "booster": [
+      62,
+      63,
+      64,
+      65,
+      66
+    ],
+    "relapse_without": 89,
+    "found_without": 90,
+    "max_phq_keel": 13.2
+  },
+  "surrogate": {
+    "n_patient_days": 55999,
+    "n_patients": 220,
+    "positive_rate": 0.07,
+    "auc_heldout_patients": 0.957,
+    "mean_abs_shap": {
+      "ring: day/night rhythm (worse than own normal)": 1.1258,
+      "ring: sleep regularity (worse than own normal)": 0.5806,
+      "ring: steps (worse than own normal)": 0.5192,
+      "ring: awake at night (worse than own normal)": 0.3332,
+      "check-in: anxiety": 0.2883,
+      "check-in: sleep": 0.2734,
+      "check-in: mood": 0.2245,
+      "days since discharge": 0.2145,
+      "ring: heart rate variability (worse than own normal)": 0.1769,
+      "check-in: interest": 0.1723,
+      "dose: morning light": 0.1498,
+      "dose: planned enjoyable activity": 0.1363,
+      "dose: brisk walk": 0.1274,
+      "check-in trend (7 d)": 0.1077,
+      "dose: slow breathing + music": 0.1013,
+      "check-in: energy": 0.0885,
+      "ring: sleep efficiency (worse than own normal)": 0.0848,
+      "dose: fixed wake time": 0.0721,
+      "body-signal trend (7 d)": 0.043,
+      "dose: social contact": 0.0312
+    }
+  },
+  "aino_shap": {
+    "day": 58,
+    "base_logodds": -6.275,
+    "top": [
+      {
+        "feature": "ring: day/night rhythm (worse than own normal)",
+        "value": 4.836,
+        "shap": 2.457
+      },
+      {
+        "feature": "ring: sleep regularity (worse than own normal)",
+        "value": 4.358,
+        "shap": 0.733
+      },
+      {
+        "feature": "body-signal trend (7 d)",
+        "value": 6.866,
+        "shap": 0.674
+      },
+      {
+        "feature": "ring: awake at night (worse than own normal)",
+        "value": 3.22,
+        "shap": 0.44
+      },
+      {
+        "feature": "check-in trend (7 d)",
+        "value": 2.912,
+        "shap": -0.425
+      }
+    ]
+  },
+  "psyched_shap_top": [
+    {
+      "feature": "steps_mvpa_sum_recent",
+      "mean_abs_shap": 0.1258
+    },
+    {
+      "feature": "steps__rolling_6_sum__max__intercept",
+      "mean_abs_shap": 0.1233
+    },
+    {
+      "feature": "sleep_asleep_iqr",
+      "mean_abs_shap": 0.1022
+    },
+    {
+      "feature": "sleep_ratio_asleep_in_bed_weekend_mean",
+      "mean_abs_shap": 0.0826
+    },
+    {
+      "feature": "steps__light_activity__sum__intercept",
+      "mean_abs_shap": 0.0787
+    },
+    {
+      "feature": "sleep_in_bed_weekend_mean",
+      "mean_abs_shap": 0.0763
+    },
+    {
+      "feature": "steps_awake_mean",
+      "mean_abs_shap": 0.0681
+    },
+    {
+      "feature": "sleep_in_bed_iqr",
+      "mean_abs_shap": 0.0673
+    }
+  ]
+}

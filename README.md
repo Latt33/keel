@@ -32,8 +32,9 @@ Three views, meant to be shown in this order:
 
 1. **Aino’s story** – one virtual patient lived twice: with Keel and without. Press **Next** (or the
    right arrow key) to step through her six months. The brain, the chart and the panels all follow.
-2. **Aino’s phone** – her model, live, paused two days into her hard week. Answer the check-in as
-   her and watch the forecast, tomorrow’s plan, the learned effects and the clinic react.
+2. **Aino’s phone** – a notification brings three questions a day (BDI structure, neutral wording),
+   one tap each. Everything else runs in the background; she can open “What has been helping you”
+   if she wants. The panel beside the phone shows the loop reacting.
 3. **The clinic** – everyone discharged after TMS, ranked by who needs a call this week, with the
    reasons and a one-click booster booking.
 4. **How we know** – the evidence: meet random new patients lived with and without Keel, the
@@ -88,6 +89,13 @@ Keel compares each person with **their own** baseline, forecasts **two weeks** r
 and always combines the ring with a daily check-in. The simulator’s 0.94 AUC is an upper bound under
 its assumptions; the PSYCHE-D number is the floor to beat with real post-TMS data. The data file is
 not committed (license); download it with the command in `data/README.md`.
+
+## Whitepaper
+
+`docs/paper/keel.pdf` (source `docs/paper/keel.tex`) describes the model, the data streams, the
+evaluation and the SHAP explanations. Regenerate the figures with
+`python -m scripts.paper_figures ../data/anon_processed_df_parquet` from `backend/`, then
+`latexmk -pdf keel.tex` in `docs/paper/`.
 
 ## Repo
 
