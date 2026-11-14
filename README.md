@@ -21,11 +21,11 @@ python -m pip install -r backend/requirements.txt
 npm install
 cd frontend; npm install; cd ..
 
-# every time: API on :8000 and the app on :5173
+# every time: API on :8000 and the app on :5180
 npm run dev
 ```
 
-Open http://localhost:5173. For a single-port demo (no Vite): `npm run build` then `npm run serve`
+Open http://localhost:5180. For a single-port demo (no Vite): `npm run build` then `npm run serve`
 and open http://localhost:8000.
 
 Three views, meant to be shown in this order:
