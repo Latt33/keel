@@ -1,0 +1,8 @@
+# Render blueprint: New > Blueprint, pick this repo.
+services:
+  - type: web
+    name: keel
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/items
+    autoDeploy: true

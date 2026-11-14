@@ -36,3 +36,21 @@ def test_items_cover_bdi_structure_and_safety_path():
         c.post("/api/live/reset")
         s = c.post("/api/live/checkin", json={"answers": {"safety": 1}, "done": []}).json()
         assert s["safety"]
+
+
+def test_live_sessions_are_separate():
+    """Two visitors of a shared deployment each get their own copy of Aino's phone."""
+    a, b = {"X-Keel-Session": "visitor-a"}, {"X-Keel-Session": "visitor-b"}
+    with TestClient(app) as client:
+        _two_visitors(client, a, b)
+
+
+def _two_visitors(client, a, b):
+    client.post("/api/live/reset", headers=a)
+    client.post("/api/live/reset", headers=b)
+    day_b = client.get("/api/live", headers=b).json()["day"]
+    qs = client.get("/api/live", headers=a).json()["questions"]
+    for _ in range(3):
+        client.post("/api/live/checkin", json={"answers": {k: 2 for k in qs}, "done": []}, headers=a)
+    assert client.get("/api/live", headers=a).json()["day"] == day_b + 3
+    assert client.get("/api/live", headers=b).json()["day"] == day_b

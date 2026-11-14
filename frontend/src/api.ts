@@ -72,11 +72,22 @@ async function j<T>(url: string, init?: RequestInit): Promise<T> {
 }
 const post = (body: unknown): RequestInit => ({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
 
+/** One id per browser tab, so every visitor of a shared deployment gets their own copy of Aino's phone. */
+const SESSION = (() => {
+  try {
+    const k = 'keel-session', v = sessionStorage.getItem(k)
+    if (v) return v
+    const id = Math.random().toString(36).slice(2) + Date.now().toString(36)
+    sessionStorage.setItem(k, id); return id
+  } catch { return Math.random().toString(36).slice(2) }
+})()
+const withSession = (init: RequestInit = {}): RequestInit => ({ ...init, headers: { ...(init.headers ?? {}), 'X-Keel-Session': SESSION } })
+
 export const api = {
   story: () => j<Story>('/api/story'),
-  live: () => j<LiveState>('/api/live'),
-  checkin: (answers: Record<string, number>, done: string[]) => j<LiveState>('/api/live/checkin', post({ answers, done })),
-  reset: () => j<LiveState>('/api/live/reset', post({})),
+  live: () => j<LiveState>('/api/live', withSession()),
+  checkin: (answers: Record<string, number>, done: string[]) => j<LiveState>('/api/live/checkin', withSession(post({ answers, done }))),
+  reset: () => j<LiveState>('/api/live/reset', withSession(post({}))),
   clinic: () => j<ClinicRow[]>('/api/clinic'),
   clinicDetail: (id: string) => j<ClinicDetail>(`/api/clinic/${id}`),
   act: (id: string, action: string) => j<{ id: string; action: string }>(`/api/clinic/${id}/action`, post({ action })),

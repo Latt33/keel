@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Header, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -39,18 +39,26 @@ def get_items():
     return {"items": items.public(), "rotation": items.ROTATION}
 
 
+def _session(x_keel_session: str | None) -> None:
+    """Each browser tab gets its own copy of Aino's phone, so visitors don't move each other's patient."""
+    live.session_id.set((x_keel_session or "default")[:64])
+
+
 @app.get("/api/live")
-def get_live():
+def get_live(x_keel_session: str | None = Header(default=None)):
+    _session(x_keel_session)
     return live.snapshot()
 
 
 @app.post("/api/live/checkin")
-def post_checkin(body: CheckIn):
+def post_checkin(body: CheckIn, x_keel_session: str | None = Header(default=None)):
+    _session(x_keel_session)
     return live.checkin(body.answers, body.done)
 
 
 @app.post("/api/live/reset")
-def post_reset():
+def post_reset(x_keel_session: str | None = Header(default=None)):
+    _session(x_keel_session)
     return live.reset()
 
 

@@ -133,6 +133,20 @@ python -m scripts.paper_figures ../data/anon_processed_df_parquet # whitepaper f
 The PSYCHE-D file is not committed (CC BY-NC licence); `data/README.md` has the download command.
 Rebuild the paper with `latexmk -pdf keel.tex` in `docs/paper/`.
 
+### Deploy
+
+The repo builds into one container: the web app is compiled inside the image and the API serves it.
+
+```bash
+docker build -t keel .
+docker run -p 8000:8000 keel        # then open http://localhost:8000
+```
+
+On [Render](https://render.com), choose **New → Blueprint** and pick this repository; `render.yaml`
+sets up a free Docker web service with a health check. Any host that runs a Dockerfile and sets
+`PORT` works the same way (Railway, Fly.io, Google Cloud Run). Each browser tab gets its own copy of
+Aino's phone, so visitors of a shared link don't move each other's patient.
+
 ### Your own ring (Oura)
 
 Put an Oura API v2 export (`sleep` and `daily_activity` JSON) or a CSV export in `data/oura/`. A
