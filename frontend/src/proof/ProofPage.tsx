@@ -30,7 +30,7 @@ export default function ProofPage() {
   const p = ev.policies
   return (
     <div className="mx-auto max-w-[1180px] px-6 py-8">
-      <h1 className="font-serif text-[34px] leading-tight">How we know it works, and where it might not.</h1>
+      <h1 className="font-serif text-[clamp(2.4rem,5vw,4.4rem)] leading-[1.02]">How we know it works, and where it might not.</h1>
       <p className="mt-2 max-w-[48rem] text-[15px] leading-relaxed text-ink/60">
         Aino is one virtual patient. Below, the same code runs on {ev.n_patients} others, each living the same {ev.days} days
         four ways, and on a public dataset of real wearable data.
@@ -80,8 +80,8 @@ export default function ProofPage() {
 
 function Card({ title, note, children }: { title: string; note: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl bg-white p-5">
-      <h2 className="font-serif text-[21px] leading-snug">{title}</h2>
+    <section className="border-t border-ink/15 pt-5">
+      <h2 className="font-serif text-[28px] leading-[1.1]">{title}</h2>
       <div className="mt-3">{children}</div>
       <p className="mt-2 text-[12px] leading-snug text-ink/55">{note}</p>
     </section>
@@ -184,9 +184,9 @@ function RealData({ rd, simAuc }: { rd: NonNullable<Evidence['real_data']>; simA
     { label: 'Both', v: rd.auc['wearable + PHQ-9 now'], c: CALM },
   ]
   return (
-    <section className="mt-5 grid grid-cols-1 gap-6 rounded-xl bg-ink p-6 text-fog lg:grid-cols-[1fr_1.1fr]">
+    <section className="mt-10 grid grid-cols-1 gap-8 bg-ink p-10 text-fog lg:grid-cols-[1fr_1.1fr]">
       <div>
-        <h2 className="font-serif text-[24px] leading-snug">Checked against real people, the ring alone is weak.</h2>
+        <h2 className="font-serif text-[34px] leading-[1.08]">Checked against real people, the ring alone is weak.</h2>
         <p className="mt-3 text-[14px] leading-relaxed text-fog/75">
           PSYCHE-D: {rd.n_samples.toLocaleString('en')} three-month stretches from {rd.n_participants.toLocaleString('en')} people with consumer
           wearables who were not depressed at the start. Who is depressed three months later? Two weeks of sleep and step data
@@ -201,7 +201,7 @@ function RealData({ rd, simAuc }: { rd: NonNullable<Evidence['real_data']>; simA
         <div className="mb-2 text-[12px] text-fog/60">How well each input tells who gets worse (AUC; 0.5 = coin flip, 1 = perfect)</div>
         {rows.map((r) => (
           <div key={r.label} className="mb-2.5">
-            <div className="mb-1 flex justify-between text-[13px]"><span className="text-fog/85">{r.label}</span><span className="font-semibold tabular-nums">{r.v.toFixed(2)}</span></div>
+            <div className="mb-1 flex justify-between text-[13px]"><span className="text-fog/85">{r.label}</span><span className="font-medium tabular-nums">{r.v.toFixed(2)}</span></div>
             <div className="relative h-3 rounded-full bg-fog/10">
               <div className="h-full rounded-full" style={{ width: `${((r.v - 0.4) / 0.6) * 100}%`, background: r.c }} />
               <div className="absolute top-[-3px] h-[18px] w-px bg-fog/50" style={{ left: `${((0.5 - 0.4) / 0.6) * 100}%` }} />
@@ -228,15 +228,15 @@ function RollAPatient({ outcomes, n }: { outcomes: Evidence['evidence']['outcome
   useEffect(() => { roll(seed) }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const met = Object.values(tally).reduce((a, b) => a + b, 0)
   return (
-    <section className="mt-6 grid grid-cols-1 gap-5 rounded-xl bg-white p-5 lg:grid-cols-[1fr_300px]">
+    <section className="mt-6 grid grid-cols-1 gap-5 border-t border-ink/15 pt-5 lg:grid-cols-[1fr_300px]">
       <div>
-        <h2 className="font-serif text-[21px] leading-snug">Aino was picked to tell the story. Meet someone picked at random.</h2>
+        <h2 className="font-serif text-[28px] leading-[1.1]">Aino was picked to tell the story. Meet someone picked at random.</h2>
         <div className="mt-3">{pair ? <PairChart pair={pair} /> : <div className="h-[230px]" />}</div>
         <OutcomeBar outcomes={outcomes} n={n} />
       </div>
       <div className="flex flex-col">
         <button disabled={busy} onClick={() => { const s = seed + 1; setSeed(s); roll(s) }}
-          className="rounded-full bg-ink px-5 py-3 text-[15px] font-semibold text-fog disabled:opacity-60">{busy ? 'Living 180 days twice…' : 'Meet another patient'}</button>
+          className="rounded-full bg-ink px-6 py-3 text-[16px] tracking-[-0.03em] text-fog disabled:opacity-60">{busy ? 'Living 180 days twice…' : 'Meet another patient'}</button>
         {pair && <p className="mt-4 text-[14px] leading-relaxed text-ink/80">{verdict(pair)}</p>}
         {met > 1 && (
           <div className="mt-auto pt-4 text-[12px] text-ink/60">

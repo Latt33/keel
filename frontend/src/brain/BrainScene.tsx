@@ -9,7 +9,7 @@ const BRAIN_HEIGHT = 2.1
 function Brain({ health }: { health: React.MutableRefObject<number[]> }) {
   const { scene } = useGLTF('/brain.glb')
   const mat = useMemo(() => new THREE.MeshPhysicalMaterial({
-    color: '#9cc3d8', emissive: new THREE.Color('#2b5876'), emissiveIntensity: 0.25,
+    color: '#c4c9cc', emissive: new THREE.Color('#2a3136'), emissiveIntensity: 0.25,
     transparent: true, opacity: 0.2, roughness: 0.35, metalness: 0, depthWrite: false, side: THREE.DoubleSide,
   }), [])
   const model = useMemo(() => {
@@ -32,7 +32,7 @@ function Brain({ health }: { health: React.MutableRefObject<number[]> }) {
   useFrame(() => {
     // the whole brain warms slightly when the network is under strain
     const tint = health.current.reduce((a, b) => a + b, 0) / health.current.length
-    const c = new THREE.Color('#2b5876').lerp(new THREE.Color('#6a2f3a'), tint * 0.8)
+    const c = new THREE.Color('#2a3136').lerp(new THREE.Color('#5a2a2a'), tint * 0.8)
     mat.emissive.lerp(c, 0.08)
   })
   return <primitive object={model} />

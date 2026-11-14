@@ -44,7 +44,7 @@ Built with heavy AI assistance (Claude) for code and copy, directed and reviewed
 | Idea of a mechanistic "digital shadow" + optimiser + clinician-in-the-loop, and the 3D brain approach | Our earlier hackathon project StimIQ (github.com/Latt33/StimIQ). No code copied; everything here was written during Junction 2026 | own work |
 | `frontend/public/brain.glb` | "Brain" by maheshshinde777, Sketchfab | CC BY 4.0 |
 | PSYCHE-D dataset (not committed) | Zenodo 5085146 | CC BY-NC 4.0 |
-| Fonts | Newsreader, Schibsted Grotesk via Fontsource | SIL OFL |
+| Font | Geist via Fontsource (visual style modelled on neuralink.com; their Untitled Sans is commercial and not included) | SIL OFL |
 
 ## Design decision: the patient does not see a relapse risk
 

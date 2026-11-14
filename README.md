@@ -98,8 +98,7 @@ backend/tests/     model and API tests (pytest)
 frontend/src/      story/ (chapters, chart, panels) · brain/ (3D scene + region mapping) · phone/ · clinic/
 ```
 
-Credits: brain model "Brain" by maheshshinde777 on Sketchfab, CC BY 4.0. Fonts: Newsreader and
-Schibsted Grotesk (SIL OFL). See HONESTY.md for everything simulated, assumed or reused.
+Credits: brain model "Brain" by maheshshinde777 on Sketchfab, CC BY 4.0. Font: Geist (SIL OFL). See HONESTY.md for everything simulated, assumed or reused.
 
 ## Real ring data (Oura)
 

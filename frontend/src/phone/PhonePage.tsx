@@ -58,7 +58,7 @@ export default function PhonePage({ story }: { story: Story }) {
         <section className="mt-4 rounded-2xl bg-white p-4">
           <label className="flex cursor-pointer items-center justify-between gap-3">
             <span>
-              <span className="block text-[14px] font-semibold">Show my two-week outlook</span>
+              <span className="block text-[14px] font-medium">Show my two-week outlook</span>
               <span className="block text-[12px] text-ink/50">Off unless you and your clinician choose to turn it on.</span>
             </span>
             <input type="checkbox" checked={showOutlook} onChange={() => setShowOutlook(!showOutlook)} className="h-5 w-5 accent-[#2e8c73]" />
@@ -74,7 +74,7 @@ export default function PhonePage({ story }: { story: Story }) {
         </section>
 
         <section className="mt-4 rounded-2xl bg-white p-4">
-          <h3 className="mb-2 text-[14px] font-semibold">Today’s plan</h3>
+          <h3 className="mb-2 text-[14px] font-medium">Today’s plan</h3>
           <ul className="space-y-2">
             {st.plan.map((k) => {
               const i = DOSE_KEYS.indexOf(k)
@@ -102,7 +102,7 @@ export default function PhonePage({ story }: { story: Story }) {
 
         <section className="mt-4 rounded-2xl bg-white p-4">
           <div className="mb-1 flex items-center justify-between">
-            <h3 className="text-[14px] font-semibold">How was today?</h3>
+            <h3 className="text-[14px] font-medium">How was today?</h3>
             <span className="text-[11px] text-ink/40">about a minute</span>
           </div>
           {QUESTIONS.map((q, i) => (
@@ -113,13 +113,13 @@ export default function PhonePage({ story }: { story: Story }) {
               <div className="mt-1 flex justify-between text-[11px] text-ink/40"><span>{q.low}</span><span>{q.high}</span></div>
             </div>
           ))}
-          <button onClick={send} disabled={busy} className="mt-3 w-full rounded-full bg-ink py-3 text-[15px] font-semibold text-fog disabled:opacity-60">
+          <button onClick={send} disabled={busy} className="mt-3 w-full rounded-full bg-ink py-3 text-[15px] font-medium text-fog disabled:opacity-60">
             {busy ? 'Sending…' : 'Send check-in'}
           </button>
         </section>
 
         <a href="tel:0925250111" className="mt-4 block rounded-2xl border border-storm/40 bg-storm/5 p-3 text-center text-[13px] text-ink">
-          Need to talk to someone now? <span className="font-semibold">MIELI crisis line 09 2525 0111</span>. Emergency: 112.
+          Need to talk to someone now? <span className="font-medium">MIELI crisis line 09 2525 0111</span>. Emergency: 112.
         </a>
       </Phone>
 
@@ -148,7 +148,7 @@ function YourWeek({ st, prev }: { st: LiveState; prev: LiveState | null }) {
   const helped = i >= 0 && st.learned.sd[i] <= 0.6 && st.learned.mean[i] > 0.4
   return (
     <section className="mt-4 rounded-2xl bg-white p-4 shadow-[0_1px_0_rgba(20,34,49,.06)]">
-      <h3 className="text-[14px] font-semibold">Your week, against your usual</h3>
+      <h3 className="text-[14px] font-medium">Your week, against your usual</h3>
       <div className="mt-3 space-y-2.5">
         {rows.map((r) => (
           <div key={r.k}>
@@ -224,22 +224,22 @@ function BehindTheScenes({ st, prev, sent, onPreset, onReset, name }: {
   ]
   return (
     <div className="pt-2">
-      <h2 className="font-serif text-[30px] leading-tight">Every check-in closes the loop.</h2>
+      <h2 className="font-serif text-[clamp(2.2rem,3.8vw,3.4rem)] leading-[1.02]">Every check-in closes the loop.</h2>
       <p className="mt-2 max-w-[34rem] text-[15px] leading-relaxed text-ink/60">
         This is {name}’s own model, paused on day {st.day - st.history.length}, two days into her hard week. Her ring has started to notice; she has not said anything yet. Answer as her and watch what changes. The phone shows her what she can do; the risk goes to her care team.
       </p>
       <div className="mt-4 flex flex-wrap gap-2 text-[13px]">
-        <button onClick={() => onPreset(false)} className="rounded-full border border-ink/20 px-3 py-1.5 hover:bg-white">Answer as a good day</button>
-        <button onClick={() => onPreset(true)} className="rounded-full border border-ink/20 px-3 py-1.5 hover:bg-white">Answer as a bad day</button>
+        <button onClick={() => onPreset(false)} className="rounded-full border border-ink px-4 py-2 hover:bg-ink hover:text-fog">Answer as a good day</button>
+        <button onClick={() => onPreset(true)} className="rounded-full border border-ink px-4 py-2 hover:bg-ink hover:text-fog">Answer as a bad day</button>
         <button onClick={onReset} className="rounded-full px-3 py-1.5 text-ink/50 hover:text-ink">Start over</button>
       </div>
       <ol className="relative mt-6 space-y-3">
         <div className="absolute bottom-6 left-[15px] top-6 w-px bg-ink/15" />
         {steps.map((s, i) => (
           <li key={s.key + (sent ? st.day : '')} className={`relative grid grid-cols-[32px_1fr] gap-3 ${sent ? 'fade-in' : ''}`} style={{ animationDelay: `${i * 120}ms` }}>
-            <span className={`z-10 flex h-8 w-8 items-center justify-center rounded-full text-[12px] font-semibold ${s.key === 'clinic' && st.alert ? 'pulse-ring bg-storm text-white' : 'bg-ink text-fog'}`}>{i + 1}</span>
-            <div className="rounded-xl bg-white p-3.5">
-              <div className="mb-1.5 text-[13px] font-semibold">{s.title}</div>
+            <span className={`z-10 flex h-8 w-8 items-center justify-center rounded-full border text-[13px] ${s.key === 'clinic' && st.alert ? 'pulse-ring border-storm bg-storm text-white' : 'border-ink/30 bg-fog text-ink'}`}>{i + 1}</span>
+            <div className="border-t border-ink/15 pt-3">
+              <div className="mb-1.5 text-[13px] font-medium">{s.title}</div>
               {s.body}
             </div>
           </li>
@@ -252,5 +252,5 @@ function BehindTheScenes({ st, prev, sent, onPreset, onReset, name }: {
 const pctText = (r: number) => (r > 0.95 ? 'over 95%' : r < 0.02 ? 'under 2%' : `${Math.round(r * 100)}%`)
 
 function RiskPill({ r }: { r: number }) {
-  return <span className="rounded-full px-2.5 py-0.5 font-semibold tabular-nums text-sea" style={{ background: riskColor(r) }}>{pctText(r)}</span>
+  return <span className="rounded-full px-2.5 py-0.5 font-medium tabular-nums text-sea" style={{ background: riskColor(r) }}>{pctText(r)}</span>
 }

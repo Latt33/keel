@@ -26,17 +26,17 @@ export default function RingPage() {
   const well = data.days[0].body - (data.days[0].body - 5)
   return (
     <div className="mx-auto max-w-[1100px] px-6 py-8">
-      <h1 className="font-serif text-[30px] leading-tight">A real ring, against its own normal.</h1>
+      <h1 className="font-serif text-[clamp(2.2rem,4vw,3.6rem)] leading-[1.02]">A real ring, against its own normal.</h1>
       <p className="mt-2 max-w-[44rem] text-[15px] leading-relaxed text-ink/60">
         {data.days.length} days from an Oura export, run through the same loop as Aino. The first {data.baseline_days.length} days
         ({data.baseline_days[0]} to {data.baseline_days[data.baseline_days.length - 1]}) define normal. No check-ins here, so this shows
         how far sleep and activity drift from that normal, in the same units as the depression score.
       </p>
-      <div className="mt-6 rounded-xl bg-white p-5">
+      <div className="mt-6 border-t border-ink/15 pt-5">
         <DriftChart data={data} well={well} />
       </div>
-      <h2 className="mt-6 text-[15px] font-semibold">Last 7 days against normal</h2>
-      <div className="mt-2 grid grid-cols-1 gap-2 rounded-xl bg-white p-5 sm:grid-cols-2">
+      <h2 className="mt-6 text-[15px] font-medium">Last 7 days against normal</h2>
+      <div className="mt-2 grid grid-cols-1 gap-2 border-t border-ink/15 pt-5 sm:grid-cols-2">
         {Object.keys(LABEL).map((k) => {
           const base = data.baseline[k]
           const now = last.reduce((a, d) => a + d.passive[k], 0) / last.length
@@ -45,7 +45,7 @@ export default function RingPage() {
           return (
             <div key={k} className="flex items-center justify-between text-[13px]">
               <span className="text-ink/70">{LABEL[k]}</span>
-              <span className={`tabular-nums ${!observed ? 'text-ink/30' : Math.abs(pct) > 8 ? 'font-semibold text-[#b5443a]' : 'text-ink'}`}>
+              <span className={`tabular-nums ${!observed ? 'text-ink/30' : Math.abs(pct) > 8 ? 'font-medium text-[#b5443a]' : 'text-ink'}`}>
                 {observed ? `${pct > 0 ? '+' : ''}${pct.toFixed(0)}%` : 'not in export'}
               </span>
             </div>

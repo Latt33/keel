@@ -105,7 +105,7 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
             <circle cx={x(ev.alert)} cy={y(story.keel[ev.alert].mood ?? 10)} r={9} fill="none" stroke="#ef6a5b" strokeWidth={2} />
             <g transform={`translate(${x(ev.alert) - 10},${y(story.keel[ev.alert].mood ?? 10) + 14})`}>
               <rect x={-92} y={0} width={92} height={20} rx={10} fill="#ef6a5b" />
-              <text x={-46} y={14} textAnchor="middle" className="fill-sea text-[11px] font-semibold">Clinic alerted</text>
+              <text x={-46} y={14} textAnchor="middle" className="fill-sea text-[11px] font-medium">Clinic alerted</text>
             </g>
           </g>
         )}

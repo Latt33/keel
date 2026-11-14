@@ -28,16 +28,15 @@ export default function App() {
   const light = route !== 'story'
   return (
     <div className={`grid h-full grid-rows-[auto_1fr] ${light ? 'bg-fog text-ink' : 'bg-sea text-foam'}`}>
-      <header className={`flex items-center gap-4 px-4 py-3 sm:gap-8 sm:px-6 ${light ? 'border-b border-ink/10' : ''}`}>
+      <header className="flex items-center gap-4 px-4 py-4 sm:gap-8 sm:px-8">
         <a href="#/story" className="flex items-baseline gap-2">
           <Logo light={light} />
-          <span className="font-serif text-[22px] leading-none">Keel</span>
-          <span className={`hidden text-[13px] sm:inline ${light ? 'text-ink/60' : 'text-mist'}`}>staying well after TMS</span>
+          <span className="text-[19px] leading-none tracking-[-0.02em]">Keel</span>
         </a>
-        <nav className="ml-auto flex gap-1 text-[12px] sm:text-[14px]">
+        <nav className="ml-auto flex items-center gap-1 text-[13px] sm:gap-3 sm:text-[16px]">
           {([['story', 'Aino’s story'], ['phone', 'Aino’s phone'], ['clinic', 'The clinic'], ['proof', 'How we know'], ...(hasRing ? [['ring', 'Your ring']] : [])] as [Route, string][]).map(([r, label]) => (
             <a key={r} href={`#/${r}`} aria-current={route === r ? 'page' : undefined}
-              className={`whitespace-nowrap rounded-full px-2.5 py-1.5 sm:px-3.5 ${route === r ? (light ? 'bg-ink text-fog' : 'bg-foam text-sea') : light ? 'text-ink/70 hover:text-ink' : 'text-mist hover:text-foam'}`}>
+              className={`whitespace-nowrap px-1.5 py-1 tracking-[-0.03em] decoration-1 underline-offset-[6px] sm:px-2 ${route === r ? 'underline' : 'hover:underline'} ${light ? 'text-ink' : 'text-foam'}`}>
               {label}
             </a>
           ))}
@@ -57,11 +56,11 @@ export default function App() {
 }
 
 function Logo({ light }: { light: boolean }) {
-  const c = light ? '#142231' : '#62c2a6'
+  const c = light ? '#0a0e10' : '#f4f5f3'
   return (
-    <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden className="translate-y-[3px]">
-      <path d="M3 11h26l-5 9H8z" fill={c} />
-      <path d="M16 20v9" stroke={c} strokeWidth="3" strokeLinecap="round" />
+    <svg width="34" height="22" viewBox="0 0 34 22" aria-hidden className="translate-y-[4px]">
+      <path d="M1 7h32l-7 8H8z" fill="none" stroke={c} strokeWidth="1.3" strokeLinejoin="round" />
+      <path d="M17 15v6" stroke={c} strokeWidth="1.3" strokeLinecap="round" />
     </svg>
   )
 }

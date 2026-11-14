@@ -82,7 +82,7 @@ export default function StoryPage({ story }: { story: Story }) {
         {/* left: the person and her brain */}
         <section className="relative flex min-h-[460px] min-w-0 flex-col">
           <div key={ch.id} className="fade-in relative z-10 px-6 pt-5">
-            <h1 className="max-w-[34rem] font-serif text-[clamp(1.6rem,2.4vw,2.2rem)] leading-[1.12] text-foam">{ch.title}</h1>
+            <h1 className="max-w-[34rem] font-serif text-[clamp(2rem,3.4vw,3.4rem)] leading-[1.02] text-foam">{ch.title}</h1>
             <p className="mt-2.5 max-w-[32rem] text-[15px] leading-relaxed text-mist">{ch.line}</p>
             {ci === 0 && <p className="mt-4 text-[13px] text-mist/70">Press Start, or the right arrow key, to follow her through six months.</p>}
             {world === 'none' && d >= 0 && (
@@ -117,7 +117,7 @@ export default function StoryPage({ story }: { story: Story }) {
               </div>
             )}
           </div>
-          <div className="min-h-[300px] flex-1 rounded-xl bg-sea-2/60">
+          <div className="min-h-[300px] flex-1 border-t border-foam/15">
             <MoodChart story={story} day={day} world={world} />
           </div>
 
@@ -125,20 +125,20 @@ export default function StoryPage({ story }: { story: Story }) {
             <Results story={story} />
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div className="rounded-xl bg-sea-2/60 p-4">
+              <div className="border-t border-foam/15 pt-4">
                 {d < 0 ? (
                   <>
-                    <h3 className="mb-2 text-[13px] font-semibold text-foam">In the clinic</h3>
+                    <h3 className="mb-2 text-[13px] font-medium text-foam">In the clinic</h3>
                     <p className="text-[13px] leading-relaxed text-mist">Daily 20-minute sessions. {d > -14 ? 'In the last two weeks she wears the ring, so Keel learns what her normal sleep and activity look like before she leaves.' : 'Psychiatrist, nurses and weekly scores keep track of her.'}</p>
                   </>
                 ) : world === 'none' ? (
                   <>
-                    <h3 className="mb-2 text-[13px] font-semibold text-foam">Between visits, nobody is looking</h3>
+                    <h3 className="mb-2 text-[13px] font-medium text-foam">Between visits, nobody is looking</h3>
                     <RingSignals story={story} rec={noneRec!} />
                   </>
                 ) : (
                   <>
-                    <h3 className="mb-2 text-[13px] font-semibold text-foam">{d < 14 ? 'Learning her normal' : 'Today’s plan'}</h3>
+                    <h3 className="mb-2 text-[13px] font-medium text-foam">{d < 14 ? 'Learning her normal' : 'Today’s plan'}</h3>
                     {d >= 1 && <div className="mb-3"><PlanToday rec={keelRec!} /></div>}
                     <RingSignals story={story} rec={keelRec!} />
                   </>
@@ -147,8 +147,8 @@ export default function StoryPage({ story }: { story: Story }) {
               {world === 'none' && d >= 0 ? (
                 <Unnoticed story={story} day={d} />
               ) : (
-              <div className="rounded-xl bg-sea-2/60 p-4">
-                <h3 className="mb-2 text-[13px] font-semibold text-foam">What helps {story.profile.name}</h3>
+              <div className="border-t border-foam/15 pt-4">
+                <h3 className="mb-2 text-[13px] font-medium text-foam">What helps {story.profile.name}</h3>
                 {d < 1 ? (
                   <p className="text-[13px] leading-relaxed text-mist">Starts from what helps most people. Her own answers will move these estimates.</p>
                 ) : null}
@@ -171,10 +171,10 @@ function Unnoticed({ story, day }: { story: Story; day: number }) {
   const visit = story.events.found_without ?? 90
   const sliding = Math.max(0, Math.min(day, visit) - start)
   return (
-    <div className="rounded-xl bg-sea-2/60 p-4">
-      <h3 className="mb-2 text-[13px] font-semibold text-foam">Who knew?</h3>
+    <div className="border-t border-foam/15 pt-4">
+      <h3 className="mb-2 text-[13px] font-medium text-foam">Who knew?</h3>
       <p className="text-[13px] leading-relaxed text-mist">
-        <span className="font-serif text-[30px] leading-none text-storm">{sliding} days</span><br />
+        <span className="font-serif text-[40px] leading-none text-storm">{sliding} days</span><br />
         since her sleep first slipped. Her next contact with the clinic is the 3-month visit{day >= visit ? ', and that is where it is found.' : ` on day ${visit}.`}
       </p>
     </div>
@@ -198,11 +198,11 @@ function ClinicToast({ story }: { story: Story }) {
     return `${RING_WORDS[k]} ${pct > 0 ? '+' : ''}${pct}%`
   })
   return (
-    <div className="fade-in absolute bottom-2 right-4 w-[300px] rounded-xl bg-foam p-4 text-ink shadow-2xl">
+    <div className="fade-in absolute bottom-2 right-4 w-[300px] bg-foam p-5 text-ink">
       <div className="flex items-center justify-between text-[11px] text-ink/50"><span>Espoo TMS clinic · call list</span><span>day {a}</span></div>
       <div className="mt-1.5 flex items-center gap-2">
         <span className="pulse-ring inline-block h-2.5 w-2.5 rounded-full bg-storm" />
-        <span className="text-[15px] font-semibold">{story.profile.name} K. · talk about a booster</span>
+        <span className="text-[15px] font-medium">{story.profile.name} K. · talk about a booster</span>
       </div>
       <div className="mt-1 text-[12px] text-ink/70">{Math.round(rec.risk * 100)}% chance of relapse within 2 weeks</div>
       <div className="mt-2 flex flex-wrap gap-1">{top.map((t) => <span key={t} className="rounded-full bg-squall/20 px-2 py-0.5 text-[11px] text-[#8a5a0c]">{t}</span>)}</div>
@@ -219,23 +219,23 @@ function Results({ story }: { story: Story }) {
     { label: 'Keel', v: keel.relapse_free_180, color: '#62c2a6' },
   ]
   return (
-    <div className="fade-in grid grid-cols-1 gap-3 rounded-xl bg-sea-2/60 p-4 md:grid-cols-[1.3fr_1fr]">
+    <div className="fade-in grid grid-cols-1 gap-3 border-t border-foam/15 pt-4 md:grid-cols-[1.3fr_1fr]">
       <div>
-        <h3 className="mb-3 text-[13px] font-semibold text-foam">Still well 6 months after TMS</h3>
+        <h3 className="mb-3 text-[13px] font-medium text-foam">Still well 6 months after TMS</h3>
         <div className="space-y-2.5">
           {bars.map((b) => (
             <div key={b.label}>
-              <div className="mb-1 flex justify-between text-[12px]"><span className="text-mist">{b.label}</span><span className="font-semibold tabular-nums text-foam">{Math.round(b.v * 100)}%</span></div>
+              <div className="mb-1 flex justify-between text-[12px]"><span className="text-mist">{b.label}</span><span className="font-medium tabular-nums text-foam">{Math.round(b.v * 100)}%</span></div>
               <div className="h-2.5 rounded-full bg-sea-3/50"><div className="h-full rounded-full" style={{ width: `${b.v * 100}%`, background: b.color }} /></div>
             </div>
           ))}
         </div>
       </div>
       <div className="space-y-3 text-[13px] leading-snug text-mist">
-        <p><span className="font-serif text-[22px] text-foam">{c.forecast.median_warning_days_keel} days</span><br />typical warning before a relapse, against {c.forecast.median_warning_days_checkin_only} from check-ins alone at the same false-alarm rate</p>
-        <p><span className="font-serif text-[22px] text-foam">{keel.boosters_per_patient.toFixed(1)}</span> booster blocks per person in 6 months, only when the forecast called for one</p>
+        <p><span className="font-serif text-[30px] text-foam">{c.forecast.median_warning_days_keel} days</span><br />typical warning before a relapse, against {c.forecast.median_warning_days_checkin_only} from check-ins alone at the same false-alarm rate</p>
+        <p><span className="font-serif text-[30px] text-foam">{keel.boosters_per_patient.toFixed(1)}</span> booster blocks per person in 6 months, only when the forecast called for one</p>
         <p className="text-[11px] text-mist/70">{c.n_patients} simulated patients, calibrated to rTMS durability data, plus a check on real wearable data.</p>
-        <a href="#/proof" className="inline-block rounded-full border border-foam/40 px-3.5 py-1.5 text-[13px] font-medium text-foam hover:bg-foam hover:text-sea">How we know</a>
+        <a href="#/proof" className="inline-block rounded-full border border-foam px-5 py-2 text-[15px] tracking-[-0.03em] text-foam hover:bg-foam hover:text-sea">How we know</a>
       </div>
     </div>
   )
@@ -259,7 +259,7 @@ function Timeline({ chapters, ci, day, onGo, onPrev, onNext, world, onWorld, can
             const active = idx === ci
             return (
               <button key={c.id} onClick={() => onGo(idx)} aria-label={c.title}
-                className={`truncate px-1 py-1 text-center text-[12px] ${active ? 'font-semibold text-foam' : idx < ci ? 'text-mist' : 'text-mist/60 hover:text-foam'}`}>
+                className={`truncate px-1 py-1 text-center text-[12px] ${active ? 'font-medium text-foam' : idx < ci ? 'text-mist' : 'text-mist/60 hover:text-foam'}`}>
                 {LABELS[c.id]}
               </button>
             )
@@ -280,7 +280,7 @@ function Timeline({ chapters, ci, day, onGo, onPrev, onNext, world, onWorld, can
       <button onClick={onAuto} aria-pressed={auto} title="Play the story by itself"
         className={`hidden rounded-full px-3 py-2 text-[13px] md:block ${auto ? 'text-calm' : 'text-mist hover:text-foam'}`}>{auto ? 'Autoplay on' : 'Autoplay'}</button>
       <button onClick={atEnd ? () => onGo(1) : onNext}
-        className="rounded-full bg-foam px-5 py-2 text-[14px] font-semibold text-sea hover:bg-white">
+        className="rounded-full bg-foam px-6 py-2.5 text-[15px] tracking-[-0.03em] text-sea hover:bg-white">
         {ci === 0 && day <= -42 ? 'Start' : atEnd ? 'Replay' : 'Next'}
       </button>
     </div>
