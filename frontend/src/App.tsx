@@ -4,11 +4,12 @@ import StoryPage from './story/StoryPage'
 import PhonePage from './phone/PhonePage'
 import ClinicPage from './clinic/ClinicPage'
 import RingPage, { fetchOura } from './ring/RingPage'
+import ProofPage from './proof/ProofPage'
 
-type Route = 'story' | 'phone' | 'clinic' | 'ring'
+type Route = 'story' | 'phone' | 'clinic' | 'ring' | 'proof'
 const routeFromHash = (): Route => {
   const h = location.hash.replace('#/', '')
-  return h === 'phone' || h === 'clinic' || h === 'ring' ? h : 'story'
+  return h === 'phone' || h === 'clinic' || h === 'ring' || h === 'proof' ? h : 'story'
 }
 
 export default function App() {
@@ -34,7 +35,7 @@ export default function App() {
           <span className={`hidden text-[13px] sm:inline ${light ? 'text-ink/60' : 'text-mist'}`}>staying well after TMS</span>
         </a>
         <nav className="ml-auto flex gap-1 text-[12px] sm:text-[14px]">
-          {([['story', 'Aino’s story'], ['phone', 'Aino’s phone'], ['clinic', 'The clinic'], ...(hasRing ? [['ring', 'Your ring']] : [])] as [Route, string][]).map(([r, label]) => (
+          {([['story', 'Aino’s story'], ['phone', 'Aino’s phone'], ['clinic', 'The clinic'], ['proof', 'How we know'], ...(hasRing ? [['ring', 'Your ring']] : [])] as [Route, string][]).map(([r, label]) => (
             <a key={r} href={`#/${r}`} aria-current={route === r ? 'page' : undefined}
               className={`whitespace-nowrap rounded-full px-2.5 py-1.5 sm:px-3.5 ${route === r ? (light ? 'bg-ink text-fog' : 'bg-foam text-sea') : light ? 'text-ink/70 hover:text-ink' : 'text-mist hover:text-foam'}`}>
               {label}
@@ -49,6 +50,7 @@ export default function App() {
         {story && route === 'phone' && <PhonePage story={story} />}
         {story && route === 'clinic' && <ClinicPage />}
         {route === 'ring' && <RingPage />}
+        {route === 'proof' && <ProofPage />}
       </main>
     </div>
   )

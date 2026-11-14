@@ -21,6 +21,7 @@ from keel.sim import make_patient, relapse_day
 
 DAYS = 180
 POLICIES = ["none", "fixed", "keel_plan", "keel"]
+CHECKPOINTS = list(range(0, DAYS + 1, 15))
 
 
 def run_one(i: int) -> dict:
@@ -28,7 +29,18 @@ def run_one(i: int) -> dict:
     for pol in POLICIES:
         p = make_patient(i, 20_000 + i, horizon=DAYS)
         L = Loop(p, pol)
-        log = L.run(DAYS)
+        learn_curve = []
+        if pol == "keel":
+            truth = p.W.sum(axis=0) * PHQ_SCALE
+            top3 = set(np.argsort(-truth)[:3])
+            for t in range(DAYS):
+                if t in CHECKPOINTS:
+                    learn_curve.append((float(np.abs(L.post.mean - truth).mean()), len(set(np.argsort(-L.post.mean)[:2]) & top3) / 2))
+                L.step(full=False)
+            learn_curve.append((float(np.abs(L.post.mean - truth).mean()), len(set(np.argsort(-L.post.mean)[:2]) & top3) / 2))
+            log = L.log
+        else:
+            log = L.run(DAYS)
         x = np.array([r["phq"] for r in log])
         rec = {"relapse": relapse_day(x), "days_relapsed": int((x >= RELAPSE_PHQ).sum()),
                "boosters": len(L.world.booster_days), "alerts": L.alerts}
@@ -44,8 +56,25 @@ def run_one(i: int) -> dict:
             top3 = set(np.argsort(-truth)[:3])
             rec["top2_prior"] = len(set(np.argsort(-prior)[:2]) & top3) / 2
             rec["top2_final"] = len(set(np.argsort(-L.post.mean)[:2]) & top3) / 2
+            rec["learn_curve"] = learn_curve
         out[pol] = rec
     return out
+
+
+def calibration_curve(n: int = 600, days: int = 365) -> dict:
+    """Untreated cohort over a year, against the rTMS durability meta-analysis."""
+    from keel.interventions import N_K
+    from keel.sim import World
+    rds = []
+    for i in range(n):
+        w = World(make_patient(i, 70_000 + i, horizon=days))
+        x = np.array([w.step(np.zeros(N_K))["phq"] for _ in range(days)])
+        r = relapse_day(x)
+        rds.append(10_000 if r is None else r)
+    rd = np.array(rds)
+    return {"days": list(range(0, days + 1, 5)), "model": [round(float((rd > d).mean()), 4) for d in range(0, days + 1, 5)],
+            "published": [{"day": 0, "value": 1.0}, {"day": 91, "value": 0.665}, {"day": 182, "value": 0.529}, {"day": 365, "value": 0.463}],
+            "source": "Senova et al., Brain Stimulation 2019 (rTMS durability meta-analysis)"}
 
 
 def learner_prior():
@@ -109,6 +138,39 @@ def main(n: int = 300) -> dict:
         "top2_in_true_top3_population_guess": round(float(np.mean([r["keel"]["top2_prior"] for r in rows])), 3),
         "top2_in_true_top3_day180": round(float(np.mean([r["keel"]["top2_final"] for r in rows])), 3),
     }
+    # ---- evidence for the "How we tested it" page --------------------------------------
+    ev: dict = {"days": list(range(DAYS + 1))}
+    ev["survival"] = {}
+    for pol in POLICIES:
+        rd = np.array([r[pol]["relapse"] if r[pol]["relapse"] is not None else 10_000 for r in rows])
+        ev["survival"][pol] = [round(float((rd > d).mean()), 4) for d in range(DAYS + 1)]
+    def roc(score, label):
+        score, label = np.asarray(score), np.asarray(label, bool)
+        pts = []
+        for q in np.linspace(0, 1, 41):
+            thr = np.quantile(score, q)
+            pred = score >= thr
+            pts.append([round(float((pred & ~label).sum() / max(1, (~label).sum())), 4), round(float((pred & label).sum() / max(1, label.sum())), 4)])
+        return sorted(pts)
+    ev["roc"] = {"keel": roc(S_, Y_), "checkin_only": roc(Sm_, Y_)}
+    ev["lead_days"] = {"keel": [int(v) for v in lead_k], "checkin_only": [int(v) for v in lead_m]}
+    lc = np.array([r["keel"]["learn_curve"] for r in rows])          # [patients, checkpoints, 2]
+    ev["learning_curve"] = {"days": CHECKPOINTS, "abs_error": lc[:, :, 0].mean(axis=0).round(3).tolist(),
+                            "top2_in_top3": lc[:, :, 1].mean(axis=0).round(3).tolist()}
+    ev["calibration"] = calibration_curve()
+    oc = {"kept_well": 0, "shorter": 0, "well_anyway": 0, "relapsed_both": 0}
+    for r in rows:
+        n, k = r["none"], r["keel"]
+        if n["relapse"] is None and k["relapse"] is None:
+            oc["well_anyway"] += 1
+        elif n["relapse"] is not None and k["relapse"] is None:
+            oc["kept_well"] += 1
+        elif n["relapse"] is not None and k["days_relapsed"] < n["days_relapsed"] / 2:
+            oc["shorter"] += 1
+        else:
+            oc["relapsed_both"] += 1
+    ev["outcomes"] = oc
+    res["evidence"] = ev
     Path("keel/results.json").write_text(json.dumps(res, indent=2))
     print(json.dumps(res, indent=2))
     return res

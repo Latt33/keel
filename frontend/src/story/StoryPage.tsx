@@ -234,7 +234,8 @@ function Results({ story }: { story: Story }) {
       <div className="space-y-3 text-[13px] leading-snug text-mist">
         <p><span className="font-serif text-[22px] text-foam">{c.forecast.median_warning_days_keel} days</span><br />typical warning before a relapse, against {c.forecast.median_warning_days_checkin_only} from check-ins alone at the same false-alarm rate</p>
         <p><span className="font-serif text-[22px] text-foam">{keel.boosters_per_patient.toFixed(1)}</span> booster blocks per person in 6 months, only when the forecast called for one</p>
-        <p className="text-[11px] text-mist/70">{c.n_patients} simulated patients, calibrated to rTMS durability data. Real wearable data (PSYCHE-D, 7 291 samples) is in the evaluation notes.</p>
+        <p className="text-[11px] text-mist/70">{c.n_patients} simulated patients, calibrated to rTMS durability data, plus a check on real wearable data.</p>
+        <a href="#/proof" className="inline-block rounded-full border border-foam/40 px-3.5 py-1.5 text-[13px] font-medium text-foam hover:bg-foam hover:text-sea">How we know</a>
       </div>
     </div>
   )

@@ -15,7 +15,8 @@ Open the app on **Aino’s story**, full screen. One presenter talks, one clicks
 | 1:50 | Next: 6 months | “We ran this for 300 virtual patients calibrated to published TMS relapse data: 56 % stay well with usual care, 89 % with Keel, and boosters only when needed, 0.7 per person.” |
 | 2:05 | Aino’s phone | Press *Answer as a bad day*, *Send check-in* four times. “This is the live loop: the forecast climbs, tomorrow’s plan changes, and her nurse is told. Notice what Aino does *not* see: no relapse risk. A prediction like that can make people worse, and some warnings are false alarms. She sees her week against her usual and what to do tomorrow. The risk goes to the person who can act on it.” |
 | 2:30 | The clinic | “And this is the nurse’s Monday: two calls about boosters, three to check, nine people she doesn’t need to worry about.” |
-| 2:45 | Close | “We checked ourselves on real data: wearables alone are weak at population level, so Keel compares each person to their own normal and always pairs the ring with a check-in. Next step: a pilot at the clinic, the ring from the last TMS week onward.” |
+| 2:40 | How we know | Click *Meet another patient* once or twice. “Aino was picked to tell the story; these are random. Across all 300, the bar shows who Keel helps and who it can’t.” Point at the dark panel: “And on real wearable data the ring alone is weak, which is exactly why we designed it this way.” |
+| 2:55 | Close | “We checked ourselves on real data: wearables alone are weak at population level, so Keel compares each person to their own normal and always pairs the ring with a check-in. Next step: a pilot at the clinic, the ring from the last TMS week onward.” |
 
 Keyboard: right arrow or space = next chapter, left arrow = back. The *With Keel / Without* toggle
 works on any chapter after discharge.

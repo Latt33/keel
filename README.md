@@ -36,6 +36,9 @@ Three views, meant to be shown in this order:
    her and watch the forecast, tomorrow’s plan, the learned effects and the clinic react.
 3. **The clinic** – everyone discharged after TMS, ranked by who needs a call this week, with the
    reasons and a one-click booster booking.
+4. **How we know** – the evidence: meet random new patients lived with and without Keel, the
+   calibration against published relapse rates, survival curves for four ways of caring, warning lead
+   times, the learning curve, and the real-data check on PSYCHE-D.
 
 ## How it works
 
