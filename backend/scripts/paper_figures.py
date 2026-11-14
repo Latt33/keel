@@ -93,9 +93,12 @@ def surrogate_shap():
     OUT["surrogate"]["mean_abs_shap"] = {FEATURES[i]: round(float(imp[i]), 4) for i in order}
     plt.figure()
     shap.plots.beeswarm(sv, max_display=14, show=False, color=plt.get_cmap("coolwarm"))
-    fig = plt.gcf(); fig.set_size_inches(7.6, 5.0)
-    plt.xlabel("SHAP value (log-odds of relapse within 14 days)", fontsize=8)
-    plt.tight_layout(); plt.savefig(FIG / "shap_global.pdf"); plt.close()
+    fig = plt.gcf(); fig.set_size_inches(7.2, 4.6)
+    ax0 = fig.axes[0]
+    ax0.tick_params(axis="y", labelsize=8); ax0.tick_params(axis="x", labelsize=8)
+    ax0.set_xlabel("SHAP value (log-odds of relapse within 14 days)", fontsize=8)
+    cb = fig.axes[-1]; cb.set_ylabel("feature value", fontsize=8, labelpad=-6); cb.tick_params(labelsize=7)
+    plt.savefig(FIG / "shap_global.pdf", bbox_inches="tight", pad_inches=0.05); plt.close()
 
     # Aino at her alert day, explained with the same surrogate
     rows, _, meta = patient_days((0, STORY_SEED, "keel"))
@@ -103,13 +106,33 @@ def surrogate_shap():
     j = min(range(len(meta)), key=lambda k: abs(meta[k][1] - (alert - 1)))
     sa = expl(np.array([rows[j]]))
     sa.feature_names = FEATURES
-    plt.figure()
-    shap.plots.waterfall(sa[0], max_display=10, show=False)
-    fig = plt.gcf(); fig.set_size_inches(8.4, 4.6)
-    plt.tight_layout(); plt.savefig(FIG / "shap_aino.pdf"); plt.close()
+    waterfall(sa.values[0], float(sa.base_values[0]), rows[j])
     top = np.argsort(-np.abs(sa.values[0]))[:5]
     OUT["aino_shap"] = {"day": int(meta[j][1]), "base_logodds": round(float(sa.base_values[0]), 3),
                         "top": [{"feature": FEATURES[i], "value": round(float(rows[j][i]), 3), "shap": round(float(sa.values[0][i]), 3)} for i in top]}
+
+
+def waterfall(vals, base, x, n=9):
+    order = list(np.argsort(-np.abs(vals))[:n])
+    rest = float(np.sum(vals) - np.sum(vals[order]))
+    labels = [f"{FEATURES[i]}  = {x[i]:.2f}" for i in order] + [f"{len(vals) - n} other features"]
+    contrib = [float(vals[i]) for i in order] + [rest]
+    fig, ax = plt.subplots(figsize=(7.2, 3.6))
+    cum = base
+    for r, (lab, c) in enumerate(zip(labels, contrib)):
+        y = len(labels) - 1 - r
+        ax.barh(y, c, left=cum, color=STORM if c > 0 else BLUE, height=0.62)
+        end = cum + c
+        ax.text(max(cum, end) + 0.06, y, f"{c:+.2f}", va="center", ha="left", fontsize=7, color="#333")
+        cum = end
+    ax.vlines([base, cum], -0.6, len(labels) - 0.45, colors=["#999", "#333"], lw=0.7, linestyles=":")
+    ax.set_yticks(range(len(labels))); ax.set_yticklabels(labels[::-1], fontsize=7.5)
+    ax.set_xlim(min(base, cum) - 0.6, max(base, cum) + 1.0)
+    ax.text(base, len(labels) - 0.3, f"average patient-day\n{base:.2f}", ha="center", va="bottom", fontsize=7, color="#666")
+    ax.text(cum, len(labels) - 0.3, f"Aino at alert\n{cum:.2f}", ha="center", va="bottom", fontsize=7, color="#333")
+    ax.set_ylim(-0.6, len(labels) + 0.9)
+    ax.set_xlabel("log-odds of relapse within 14 days", fontsize=8); ax.tick_params(axis="x", labelsize=8)
+    fig.savefig(FIG / "shap_aino.pdf", bbox_inches="tight", pad_inches=0.05); plt.close(fig)
 
 
 def psyched_shap(path: str):
@@ -164,7 +187,7 @@ def evaluation_figures():
     fig, ax = plt.subplots(figsize=(3.5, 2.6))
     ax.plot(lc["days"], lc["top2_in_top3"], color=CALM, lw=1.6, marker="o", ms=3)
     ax.axhline(lc["top2_in_top3"][0], color=INK, ls="--", lw=0.8)
-    ax.text(178, lc["top2_in_top3"][0] - 0.025, "population prior", ha="right", fontsize=7)
+    ax.text(lc["days"][-1], lc["top2_in_top3"][0] + 0.008, "population prior", ha="right", va="bottom", fontsize=7)
     ax.set_xlabel("days since discharge"); ax.set_ylabel("top-2 doses in true top-3")
     fig.tight_layout(); fig.savefig(FIG / "learning.pdf"); plt.close(fig)
 
@@ -193,7 +216,17 @@ def aino_figure():
         ax.axvspan(b, b + 5, color="#cdb98c", alpha=0.45, lw=0)
     for d in ev["life_event"]:
         if d < 120: ax.axvline(d, color=AMBER, lw=0.8, ls="--")
-    ax.annotate("alert", (a, k[a]["phq"]), xytext=(a - 25, 20), arrowprops=dict(arrowstyle="->", lw=0.7), fontsize=7)
+    ax.axvline(a, color=STORM, lw=0.8)
+    top = ax.get_xaxis_transform()
+    ax.text(-21, 1.02, "acute rTMS", transform=top, ha="center", va="bottom", fontsize=7, color="#8a7a4f")
+    le = [d for d in ev["life_event"] if d < 120]
+    for i, d in enumerate(le):
+        if i and d - le[i - 1] < 5: continue
+        ax.text(d - 1 if i == 0 else d + 2, 1.02, "life event", transform=top, ha="right" if i == 0 else "left", va="bottom", fontsize=7, color=AMBER)
+    ax.text(a + 1, 1.02, "alert", transform=top, ha="left", va="bottom", fontsize=7, color=STORM)
+    if ev["booster"]:
+        ax.text(ev["booster"][0] + 2.5, 1.09, "booster", transform=top, ha="center", va="bottom", fontsize=7, color="#8a7a4f")
+    ax.text(178, RELAPSE_PHQ + 0.4, "relapse threshold", ha="right", va="bottom", fontsize=7, color=STORM)
     ax.set_xlim(-42, 179); ax.set_ylim(0, 24); ax.set_xlabel("days since end of acute rTMS"); ax.set_ylabel("PHQ-9-equivalent score")
     ax.legend(frameon=False, fontsize=7, ncol=4, loc="upper center", bbox_to_anchor=(0.5, -0.2))
     fig.set_size_inches(7.2, 3.3)

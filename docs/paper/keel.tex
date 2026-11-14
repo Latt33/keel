@@ -10,6 +10,7 @@
 \usepackage{microtype}
 \usepackage{xcolor}
 \usepackage{tikz}
+\usepackage[section]{placeins}
 \usetikzlibrary{arrows.meta,positioning,fit,calc}
 \usepackage[hidelinks]{hyperref}
 \captionsetup{font=small}
@@ -18,14 +19,14 @@
 
 \author{
 \begin{tabular}{cc}
-Konsta Kiirikki & Nikolas Juhava \\
+Atte Laakso & Konsta Kiirikki \\
 School of Science & School of Science \\
 Aalto University & Aalto University \\
-\texttt{konsta.kiirikki@aalto.fi} & \texttt{nikolas.juhava@aalto.fi} \\[1.2ex]
-Atte Laakso & Qilun Li \\
+\texttt{atte.laakso@aalto.fi} & \texttt{konsta.kiirikki@aalto.fi} \\[1.2ex]
+Nikolas Juhava & Qilun Li \\
 School of Science & School of Science \\
 Aalto University & Aalto University \\
-\texttt{atte.laakso@aalto.fi} & \texttt{qilun.li@aalto.fi}
+\texttt{nikolas.juhava@aalto.fi} & \texttt{qilun.li@aalto.fi}
 \end{tabular}}
 \date{November 15, 2026}
 
@@ -299,8 +300,9 @@ KEEL turns maintenance after rTMS from a fixed calendar into a forecast. A mecha
 
 \section*{Code Availability}
 
-The simulator, forecast, learner, evaluation scripts, the figure pipeline for this paper (\texttt{paper\_figures.py}) and the demonstrator (patient phone, clinician list, evidence view) are available at \url{https://github.com/Latt33/keel}.
+The simulator, forecast, learner, evaluation scripts, the figure pipeline for this paper (\texttt{paper\_figures.py}) and the demonstrator (patient phone, clinician list, evidence view) are available at\\ \url{https://github.com/Latt33/keel}.
 
+\FloatBarrier
 \begin{thebibliography}{99}\small
 \bibitem{senova2019} S.~Senova, G.~Cotovio, A.~Pascual-Leone, A.~J.~Oliveira-Maia. Durability of antidepressant response to repetitive transcranial magnetic stimulation: systematic review and meta-analysis. \emph{Brain Stimulation}, 12(1):119--128, 2019.
 \bibitem{akram2024} S.~Akram, I.~Nanji, I.~Deniz, F.~Akram, F.~Mukhtar. Maintenance repetitive transcranial magnetic stimulation for major depressive disorder. \emph{The Journal of ECT}, 2024. doi:10.1097/YCT.0000000000001064.
