@@ -102,13 +102,6 @@ export default function StoryPage({ story }: { story: Story }) {
             )}
             {ch.id === 'warning' && story.events.alert != null && d >= story.events.alert && <ClinicToast story={story} />}
           </div>
-          <div className="flex flex-wrap items-center gap-3 px-6 pb-4 text-[11px] text-mist">
-            <span>The ring of light around her:</span>
-            <span className="inline-flex items-center gap-1"><i className="inline-block h-2 w-2 rounded-full bg-calm" />doing well</span>
-            <span className="inline-flex items-center gap-1"><i className="inline-block h-2 w-2 rounded-full bg-squall" />strained</span>
-            <span className="inline-flex items-center gap-1"><i className="inline-block h-2 w-2 rounded-full bg-storm" />depressed</span>
-            <span className="text-mist/60">Her routine as the model estimates it, one day per turn of the sun</span>
-          </div>
         </section>
 
         {/* right: what is measured, forecast, what is done */}
