@@ -75,8 +75,22 @@ def snapshot() -> dict:
         "alert": bool(L.alerts), "booster_pending": L.world.pending_booster, "streak": L.risk_streak,
         "history": _state.get("history", []),
         "questions": item_bank.questions_for(L.world.t),
+        "path": _path(L),
         "safety": _state.get("safety", False),
     }
+
+
+def _path(L: Loop) -> list[dict]:
+    """Every day since discharge, for the patient's path view (no risk in here on purpose)."""
+    answered = {h["day"]: h.get("answers") for h in _state.get("history", [])}
+    base = L.baseline.mean
+    idx = {k: i for i, k in enumerate(PASSIVE)}
+    out = []
+    for r in L.log:
+        rel = {k: round(float(r["passive"][k] / base[idx[k]]), 3) for k in ("sleep_regularity", "rhythm_strength", "steps")}
+        out.append({"day": r["day"], "checkin": r["checkin"] is not None, "done": r["done"], "booster": r["in_booster"],
+                    "alert": r["alert"], "answers": answered.get(r["day"]), "rel": rel})
+    return out
 
 
 def checkin(answers: dict[str, float], done: list[str]) -> dict:

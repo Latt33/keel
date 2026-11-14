@@ -45,6 +45,7 @@ export interface LiveState {
   week: Record<string, number>; baseline: Record<string, number>
   alert: boolean; booster_pending: number | null; streak: number
   questions: string[]; safety: boolean
+  path: { day: number; checkin: boolean; done: string[]; booster: boolean; alert: boolean; answers: Record<string, number> | null; rel: Record<string, number> }[]
   history: { day: number; phq: number; risk_before: number; risk_after: number; done: string[]; answers?: Record<string, number> }[]
   changed?: { risk_before: number; risk_after: number }
 }

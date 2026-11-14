@@ -36,3 +36,5 @@ input[type=range].slider::-moz-range-thumb { width: 22px; height: 22px; border-r
 /* display type: light weight, tight tracking */
 .font-serif { font-weight: 300; letter-spacing: -0.035em; }
 h1, h2, h3 { font-weight: 400; }
+.sheet-up { animation: sheetup .28s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes sheetup { from { transform: translateY(40px); opacity: 0 } to { transform: none; opacity: 1 } }
