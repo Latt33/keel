@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import BrainScene from '../brain/BrainScene'
 
 const LOW = [2.3, 2.1, 2.2, 2.2, 1.9]
@@ -9,12 +9,16 @@ export default function Landing() {
   const [s, setS] = useState(LOW)
   const [coil, setCoil] = useState(false)
   const [leaving, setLeaving] = useState(false)
+  const [ready, setReady] = useState(false)
+  const onReady = useCallback(() => setReady(true), [])
+  // the treatment plays once the brain is on screen, however long it took to load
   useEffect(() => {
+    if (!ready) return
     const a = setTimeout(() => setCoil(true), 900)
     const b = setTimeout(() => setS(WELL), 2000)
     const c = setTimeout(() => setCoil(false), 4800)
     return () => { clearTimeout(a); clearTimeout(b); clearTimeout(c) }
-  }, [])
+  }, [ready])
   const enter = () => { setLeaving(true); setTimeout(() => { location.hash = '#/story' }, 450) }
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === 'ArrowRight') enter() }
@@ -23,8 +27,8 @@ export default function Landing() {
 
   return (
     <div className={`relative h-full overflow-hidden bg-sea text-foam transition-opacity duration-500 ${leaving ? 'opacity-0' : 'opacity-100'}`}>
-      <div className="land-brain absolute inset-0">
-        <BrainScene s={s} coil={coil} labels={false} autoRotate camera={[-2.9, 0.5, 2.3]} ease={0.7} />
+      <div className={`absolute inset-0 transition-opacity duration-1000 ${ready ? 'opacity-100' : 'opacity-0'}`}>
+        <BrainScene s={s} coil={coil} labels={false} autoRotate camera={[-2.9, 0.5, 2.3]} ease={0.7} onReady={onReady} />
       </div>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-sea via-sea/80 to-transparent" />
       <div className="relative flex h-full flex-col justify-end px-6 pb-12 sm:px-14 sm:pb-14">

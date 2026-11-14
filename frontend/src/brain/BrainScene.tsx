@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useRef } from 'react'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
@@ -6,7 +6,7 @@ import { LINKS, REGIONS, loadColor, loadHex } from './mapping'
 
 const BRAIN_HEIGHT = 2.1
 
-function Brain({ health }: { health: React.MutableRefObject<number[]> }) {
+function Brain({ health, onReady }: { health: React.MutableRefObject<number[]>; onReady?: () => void }) {
   const { scene } = useGLTF('/brain.glb')
   const mat = useMemo(() => new THREE.MeshPhysicalMaterial({
     color: '#c4c9cc', emissive: new THREE.Color('#2a3136'), emissiveIntensity: 0.25,
@@ -35,6 +35,7 @@ function Brain({ health }: { health: React.MutableRefObject<number[]> }) {
     const c = new THREE.Color('#2a3136').lerp(new THREE.Color('#5a2a2a'), tint * 0.8)
     mat.emissive.lerp(c, 0.08)
   })
+  useEffect(() => { onReady?.() }, [onReady])
   return <primitive object={model} />
 }
 useGLTF.preload('/brain.glb')
@@ -186,7 +187,7 @@ function LabelProjector({ els, health }: { els: Els; health: React.MutableRefObj
   return null
 }
 
-function Rig({ s, coil, labels, autoRotate, labelEls, ease }: { s: number[]; coil: boolean; labels: boolean; autoRotate: boolean; labelEls: Els; ease: number }) {
+function Rig({ s, coil, labels, autoRotate, labelEls, ease, onReady }: { s: number[]; coil: boolean; labels: boolean; autoRotate: boolean; labelEls: Els; ease: number; onReady?: () => void }) {
   const health = useRef<number[]>(REGIONS.map((r) => r.load(s)))
   const target = useRef<number[]>(health.current)
   target.current = REGIONS.map((r) => r.load(s))
@@ -199,27 +200,30 @@ function Rig({ s, coil, labels, autoRotate, labelEls, ease }: { s: number[]; coi
       <ambientLight intensity={0.7} />
       <directionalLight position={[-3, 4, 4]} intensity={1.2} />
       <pointLight position={[3, -2, -3]} intensity={0.6} color="#7fb2ff" />
-      <group position={[0, -0.3, 0]}>
-        <Suspense fallback={null}><Brain health={health} /></Suspense>
-        {LINKS.map(([a, b]) => <Link key={a + b} a={a} b={b} health={health} />)}
-        {REGIONS.map((_, i) => <Node key={i} i={i} health={health} />)}
-        {labels && <LabelProjector els={labelEls} health={health} />}
-        <Coil active={coil} />
-        {location.search.includes("axes") && <axesHelper args={[1.5]} />}
-      </group>
+      {/* nothing shows until the brain itself has loaded, so the network never floats alone */}
+      <Suspense fallback={null}>
+        <group position={[0, -0.3, 0]}>
+          <Brain health={health} onReady={onReady} />
+          {LINKS.map(([a, b]) => <Link key={a + b} a={a} b={b} health={health} />)}
+          {REGIONS.map((_, i) => <Node key={i} i={i} health={health} />)}
+          {labels && <LabelProjector els={labelEls} health={health} />}
+          <Coil active={coil} />
+          {location.search.includes("axes") && <axesHelper args={[1.5]} />}
+        </group>
+      </Suspense>
       <OrbitControls target={[0, -0.05, 0]} enablePan={false} minDistance={2.6} maxDistance={6} autoRotate={autoRotate} autoRotateSpeed={0.35} enableDamping />
     </>
   )
 }
 
-export default function BrainScene({ s, coil = false, labels = true, autoRotate = true, camera = [-2.7, 0.6, 2.05], ease = 3 }: {
-  s: number[]; coil?: boolean; labels?: boolean; autoRotate?: boolean; camera?: [number, number, number]; ease?: number
+export default function BrainScene({ s, coil = false, labels = true, autoRotate = true, camera = [-2.7, 0.6, 2.05], ease = 3, onReady }: {
+  s: number[]; coil?: boolean; labels?: boolean; autoRotate?: boolean; camera?: [number, number, number]; ease?: number; onReady?: () => void
 }) {
   const labelEls = useRef<(HTMLDivElement | null)[]>([])
   return (
     <div className="relative h-full w-full">
       <Canvas camera={{ position: camera, fov: 40 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
-        <Rig s={s} coil={coil} labels={labels} autoRotate={autoRotate} labelEls={labelEls} ease={ease} />
+        <Rig s={s} coil={coil} labels={labels} autoRotate={autoRotate} labelEls={labelEls} ease={ease} onReady={onReady} />
       </Canvas>
       {labels && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
