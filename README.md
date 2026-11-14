@@ -28,10 +28,10 @@ npm run dev
 Open http://localhost:5180. For a single-port demo (no Vite): `npm run build` then `npm run serve`
 and open http://localhost:8000.
 
-Three views, meant to be shown in this order:
+The landing page shows the treatment (a brain settling under the TMS coil) and leads into four views, meant to be shown in this order:
 
 1. **Aino’s story** – one virtual patient lived twice: with Keel and without. Press **Next** (or the
-   right arrow key) to step through her six months. The brain, the chart and the panels all follow.
+   right arrow key) to step through her six months. Her home, the chart and the panels all follow: each turn of the sun is one day, and what she does at each hour (sleeping, awake at night, morning light outside, the sofa, the clinic, the evening check-in) follows the model’s state.
 2. **Aino’s phone** – a notification brings three questions a day (BDI structure, neutral wording),
    one tap each. Everything else runs in the background; she can open “What has been helping you”
    if she wants. The panel beside the phone shows the loop reacting.
@@ -103,7 +103,7 @@ evaluation and the SHAP explanations. Regenerate the figures with
 backend/keel/      sim (virtual patient) · forecast · learner · planner · loop · story · clinic · live · api
 backend/scripts/   evaluate.py · calibrate_forecast.py · psyched_baseline.py
 backend/tests/     model and API tests (pytest)
-frontend/src/      story/ (chapters, chart, panels) · brain/ (3D scene + region mapping) · phone/ · clinic/
+frontend/src/      landing/ · story/ (chapters, chart, panels) · house/ (her day, 3D) · brain/ (landing scene) · phone/ · clinic/
 ```
 
 Credits: brain model "Brain" by maheshshinde777 on Sketchfab, CC BY 4.0. Font: Geist (SIL OFL). See HONESTY.md for everything simulated, assumed or reused.

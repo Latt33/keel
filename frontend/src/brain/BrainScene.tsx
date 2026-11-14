@@ -186,12 +186,12 @@ function LabelProjector({ els, health }: { els: Els; health: React.MutableRefObj
   return null
 }
 
-function Rig({ s, coil, labels, autoRotate, labelEls }: { s: number[]; coil: boolean; labels: boolean; autoRotate: boolean; labelEls: Els }) {
+function Rig({ s, coil, labels, autoRotate, labelEls, ease }: { s: number[]; coil: boolean; labels: boolean; autoRotate: boolean; labelEls: Els; ease: number }) {
   const health = useRef<number[]>(REGIONS.map((r) => r.load(s)))
   const target = useRef<number[]>(health.current)
   target.current = REGIONS.map((r) => r.load(s))
   useFrame((_, dt) => {
-    const k = Math.min(1, dt * 3)
+    const k = Math.min(1, dt * ease)
     health.current = health.current.map((h, i) => h + (target.current[i] - h) * k)
   })
   return (
@@ -212,14 +212,14 @@ function Rig({ s, coil, labels, autoRotate, labelEls }: { s: number[]; coil: boo
   )
 }
 
-export default function BrainScene({ s, coil = false, labels = true, autoRotate = true, camera = [-2.7, 0.6, 2.05] }: {
-  s: number[]; coil?: boolean; labels?: boolean; autoRotate?: boolean; camera?: [number, number, number]
+export default function BrainScene({ s, coil = false, labels = true, autoRotate = true, camera = [-2.7, 0.6, 2.05], ease = 3 }: {
+  s: number[]; coil?: boolean; labels?: boolean; autoRotate?: boolean; camera?: [number, number, number]; ease?: number
 }) {
   const labelEls = useRef<(HTMLDivElement | null)[]>([])
   return (
     <div className="relative h-full w-full">
       <Canvas camera={{ position: camera, fov: 40 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true }}>
-        <Rig s={s} coil={coil} labels={labels} autoRotate={autoRotate} labelEls={labelEls} />
+        <Rig s={s} coil={coil} labels={labels} autoRotate={autoRotate} labelEls={labelEls} ease={ease} />
       </Canvas>
       {labels && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden">

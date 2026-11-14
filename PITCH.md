@@ -1,11 +1,12 @@
 # Pitch (3 minutes) and demo path
 
-Open the app on **Aino’s story**, full screen. One presenter talks, one clicks **Next**.
+Open the app on the landing page (http://localhost:5180), full screen. One presenter talks, one clicks.
 
 | Time | Screen | Say (roughly) |
 |---|---|---|
-| 0:00 | Story, first chapter (red brain) | “This is Aino. Depressed for most of two years, two medications failed.” |
-| 0:10 | Next: TMS | “Six weeks of TMS. Watch the network settle and her score fall below the line.” |
+| 0:00 | Landing | Let the brain settle from red to green. “TMS works for depression. The hard part is staying well afterwards, at home.” Click *Follow Aino’s six months*. |
+| 0:08 | Story, first chapter | “This is Aino. Depressed for most of two years, two medications failed. Each turn of the sun is one day in her life.” |
+| 0:15 | Next: TMS | “Six weeks of TMS: every weekday she leaves for the clinic, and her score falls below the line.” |
 | 0:25 | Next: Home | “Then the daily visits end. About half of TMS responders relapse within a year. She goes home with a ring and a one-minute check-in.” |
 | 0:40 | Next: Learning | “Every morning Keel suggests one or two small things. Every day it checks what actually moved her mood. For Aino, reaching out to someone works. Breathing exercises don’t.” |
 | 1:00 | Next: Hard week | “A hard week. The dashed line is her sleep and activity, converted to the same scale. It rises before she says anything. The forecast band turns red.” |
@@ -27,8 +28,7 @@ works on any chapter after discharge.
   is real and sets expectations.
 * **Why not just send everyone to monthly boosters?** Six blocks per person in 6 months vs 0.69 with Keel,
   and rescue protocols outperform fixed ones in the maintenance rTMS meta-analysis.
-* **Isn’t the brain view fake?** It is labelled a schematic of the model’s estimate. It shows where the
-  model’s five symptom dimensions sit anatomically, nothing more.
+* **Why a house and not the brain?** We can’t see inside her head from a ring and three questions, so the story shows what the model does estimate: her day. When she sleeps, when she gets up, whether she goes outside. The brain stays on the landing page as the treatment itself.
 * **Doesn’t a warning stress the patient?** That’s why she never sees one. The risk goes to the clinician; the patient sees her rhythm against her usual and a small next step. An opt-in outlook exists for people who want it.
 * **Safety?** No diagnosis to the patient, an always-visible crisis path, and the clinician makes every
   treatment decision.

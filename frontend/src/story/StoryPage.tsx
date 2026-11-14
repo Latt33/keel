@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Story } from '../api'
-import BrainScene from '../brain/BrainScene'
+import HouseScene, { type Activity } from '../house/HouseScene'
 import { clamp, riskColor, riskWord } from '../lib'
 import { chaptersFor } from './chapters'
 import MoodChart from './MoodChart'
@@ -73,13 +73,16 @@ export default function StoryPage({ story }: { story: Story }) {
   const keelRec = d >= 0 ? story.keel[Math.min(d, story.keel.length - 1)] : null
   const noneRec = d >= 0 ? story.none[Math.min(d, story.none.length - 1)] : null
   const s = tmsRec ? tmsRec.s : world === 'none' ? noneRec!.s : keelRec!.s
-  const coil = (ch.coil ?? false) && (ch.id === 'tms' ? d < 0 : story.events.booster.includes(d) || (ch.id === 'booster' && d <= (story.events.booster.at(-1) ?? 0)))
+  const atClinic = (ci > 0 && !!tmsRec?.session) || (world === 'keel' && !!keelRec?.in_booster)
+  const [act, setAct] = useState<Activity | null>(null)
+  const house = useMemo(() => ({ s, day, atClinic, phone: world === 'keel' && d >= 0, plan: world === 'keel' && keelRec ? keelRec.plan : [] }),
+    [s, day, atClinic, world, d, keelRec])
   const sessionNo = tmsRec ? story.tms.slice(0, d + 43).filter((t) => t.session).length : 0
 
   return (
     <div className="grid min-h-full grid-rows-[1fr_auto] lg:h-full">
       <div className="grid min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)]">
-        {/* left: the person and her brain */}
+        {/* left: her home, one day per turn of the sun */}
         <section className="relative flex min-h-[460px] min-w-0 flex-col">
           <div key={ch.id} className="fade-in relative z-10 px-6 pt-5">
             <h1 className="max-w-[34rem] font-serif text-[clamp(2rem,3.4vw,3.4rem)] leading-[1.02] text-foam">{ch.title}</h1>
@@ -90,15 +93,21 @@ export default function StoryPage({ story }: { story: Story }) {
             )}
           </div>
           <div className="relative min-h-0 flex-1">
-            <div className="absolute inset-0"><BrainScene s={s} coil={coil} /></div>
+            <div className="absolute inset-0"><HouseScene inp={house} onActivity={setAct} /></div>
+            {act && (
+              <div className="pointer-events-none absolute left-6 top-3 text-[13px]">
+                <span className="tabular-nums text-foam">{act.clock}</span>
+                <span key={act.what} className="fade-in ml-3 text-mist">{act.what}</span>
+              </div>
+            )}
             {ch.id === 'warning' && story.events.alert != null && d >= story.events.alert && <ClinicToast story={story} />}
           </div>
           <div className="flex flex-wrap items-center gap-3 px-6 pb-4 text-[11px] text-mist">
-            <span className="inline-flex items-center gap-1"><i className="inline-block h-2 w-2 rounded-full bg-calm" />settled</span>
+            <span>The ring of light around her:</span>
+            <span className="inline-flex items-center gap-1"><i className="inline-block h-2 w-2 rounded-full bg-calm" />doing well</span>
             <span className="inline-flex items-center gap-1"><i className="inline-block h-2 w-2 rounded-full bg-squall" />strained</span>
-            <span className="inline-flex items-center gap-1"><i className="inline-block h-2 w-2 rounded-full bg-storm" />depressed pattern</span>
-            <span className="text-mist/60">Schematic of the model’s estimate, not a brain scan</span>
-            <span className="text-mist/40 lg:ml-auto">Brain model: maheshshinde777, CC BY 4.0</span>
+            <span className="inline-flex items-center gap-1"><i className="inline-block h-2 w-2 rounded-full bg-storm" />depressed</span>
+            <span className="text-mist/60">Her routine as the model estimates it, one day per turn of the sun</span>
           </div>
         </section>
 

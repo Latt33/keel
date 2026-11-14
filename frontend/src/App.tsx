@@ -5,11 +5,12 @@ import PhonePage from './phone/PhonePage'
 import ClinicPage from './clinic/ClinicPage'
 import RingPage, { fetchOura } from './ring/RingPage'
 import ProofPage from './proof/ProofPage'
+import Landing from './landing/Landing'
 
-type Route = 'story' | 'phone' | 'clinic' | 'ring' | 'proof'
+type Route = 'home' | 'story' | 'phone' | 'clinic' | 'ring' | 'proof'
 const routeFromHash = (): Route => {
   const h = location.hash.replace('#/', '')
-  return h === 'phone' || h === 'clinic' || h === 'ring' || h === 'proof' ? h : 'story'
+  return h === 'story' || h === 'phone' || h === 'clinic' || h === 'ring' || h === 'proof' ? h : 'home'
 }
 
 export default function App() {
@@ -26,10 +27,11 @@ export default function App() {
   useEffect(() => { fetchOura().then((d) => setHasRing(!!d)).catch(() => {}) }, [])
 
   const light = route !== 'story'
+  if (route === 'home') return <Landing />
   return (
     <div className={`grid h-full grid-rows-[auto_1fr] ${light ? 'bg-fog text-ink' : 'bg-sea text-foam'}`}>
       <header className="flex items-center gap-4 px-4 py-4 sm:gap-8 sm:px-8">
-        <a href="#/story" className="flex items-baseline gap-2">
+        <a href="#/" className="flex items-baseline gap-2">
           <Logo light={light} />
           <span className="text-[19px] leading-none tracking-[-0.02em]">Keel</span>
         </a>
