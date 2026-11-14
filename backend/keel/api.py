@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import clinic, live, story
+from . import clinic, live, oura, story
 
 app = FastAPI(title="Keel", version="0.1")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -65,6 +65,20 @@ def get_clinic_detail(pid: str):
 @app.post("/api/clinic/{pid}/action")
 def post_action(pid: str, body: Action):
     return clinic.act(pid, body.action)
+
+
+_OURA = Path(__file__).resolve().parents[2] / "data" / "oura"
+
+
+@app.get("/api/oura")
+def get_oura():
+    files = sorted([*_OURA.glob("*.json"), *_OURA.glob("*.csv")]) if _OURA.exists() else []
+    if not files:
+        raise HTTPException(404, "No Oura export in data/oura yet")
+    try:
+        return oura.replay(files)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
 
 
 @app.on_event("startup")

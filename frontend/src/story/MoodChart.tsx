@@ -42,7 +42,7 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
 
   return (
     <div ref={ref} className="relative h-full w-full">
-      <svg width={W} height={H} className="block" role="img" aria-label="Depression score over time">
+      {width > 60 && height > 60 && <svg width={W} height={H} className="block" role="img" aria-label="Depression score over time">
         {/* relapse zone */}
         <rect x={m.l} y={m.t} width={W - m.l - m.r} height={relapseY - m.t} fill="#ef6a5b" opacity={0.08} />
         <line x1={m.l} x2={W - m.r} y1={relapseY} y2={relapseY} stroke="#ef6a5b" strokeOpacity={0.7} strokeDasharray="4 4" />
@@ -130,7 +130,7 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
             <text x={24} y={4} className="fill-foam">Same life, without Keel</text>
           </g>)}
         </g>
-      </svg>
+      </svg>}
     </div>
   )
 }

@@ -21,7 +21,7 @@ export default function MiniForecast({ trend, fan, risk, relapse = 15, height = 
   const ink = dark ? '#eef3f5' : '#142231'
   return (
     <div ref={ref} style={{ height: H }}>
-      <svg width={W} height={H} className="block">
+      {width > 60 && <svg width={W} height={H} className="block">
         <rect x={0} y={8} width={W} height={y(relapse) - 8} fill="#ef6a5b" opacity={0.08} />
         <line x1={0} x2={W} y1={y(relapse)} y2={y(relapse)} stroke="#ef6a5b" strokeDasharray="3 3" strokeOpacity={0.7} />
         <line x1={x(n - 1)} x2={x(n - 1)} y1={6} y2={H - 14} stroke={ink} strokeOpacity={0.2} />
@@ -31,7 +31,7 @@ export default function MiniForecast({ trend, fan, risk, relapse = 15, height = 
         <path d={pathOf([start, ...fan.p50.map((v, h) => [x(n + h), y(Math.min(24, v))] as [number, number])])} fill="none" stroke={c} strokeWidth={1.5} strokeDasharray="2 3" />
         <path d={pathOf(trend.map((t, i) => [x(i), y(Math.min(24, t.body))]))} fill="none" stroke={dark ? '#8ec5ff' : '#3b7fc4'} strokeWidth={1.4} strokeDasharray="4 3" />
         <path d={pathOf(trend.map((t, i) => (t.mood == null ? null : [x(i), y(Math.min(24, t.mood))])))} fill="none" stroke={ink} strokeWidth={2.4} strokeLinejoin="round" />
-      </svg>
+      </svg>}
     </div>
   )
 }

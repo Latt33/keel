@@ -7,3 +7,5 @@ __pycache__/
 data/anon_processed_df_parquet
 data/*.parquet
 data/LICENSE.pdf
+data/oura/*.json
+data/oura/*.csv

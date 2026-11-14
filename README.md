@@ -97,3 +97,11 @@ frontend/src/      story/ (chapters, chart, panels) · brain/ (3D scene + region
 
 Credits: brain model "Brain" by maheshshinde777 on Sketchfab, CC BY 4.0. Fonts: Newsreader and
 Schibsted Grotesk (SIL OFL). See HONESTY.md for everything simulated, assumed or reused.
+
+## Real ring data (Oura)
+
+Put an Oura API v2 export (`sleep` and `daily_activity` JSON, e.g. saved from
+`https://api.ouraring.com/v2/usercollection/sleep?start_date=...&end_date=...`) or a CSV export in
+`data/oura/`. A fourth tab, **Your ring**, appears: the first 14 days become that person’s normal and
+every later day shows the drift from it and the two-week outlook. `python -m scripts.oura_replay`
+prints the same in the terminal. At least 21 days with sleep, steps and HRV are needed.
