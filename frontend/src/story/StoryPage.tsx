@@ -80,41 +80,42 @@ export default function StoryPage({ story }: { story: Story }) {
   const sessionNo = tmsRec ? story.tms.slice(0, d + 43).filter((t) => t.session).length : 0
 
   return (
-    <div className="grid min-h-full grid-rows-[1fr_auto] lg:h-full">
-      <div className="grid min-h-0 grid-cols-1 lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)]">
+    <div className="grid h-full grid-rows-[1fr_auto]">
+      {/* phones: everything on one screen, so the column stacks and the chart takes what is left */}
+      <div className="flex min-h-0 flex-col lg:grid lg:grid-cols-[minmax(0,44fr)_minmax(0,56fr)]">
         {/* left: her home, one day per turn of the sun */}
-        <section className="relative flex min-h-[440px] min-w-0 flex-col sm:min-h-[460px]">
-          <div key={ch.id} className="fade-in relative z-10 px-6 pt-5">
-            <h1 className="max-w-[34rem] font-serif text-[clamp(2rem,3.4vw,3.4rem)] leading-[1.02] text-foam">{ch.title}</h1>
-            <p className="mt-2.5 max-w-[32rem] text-[15px] leading-relaxed text-mist">{ch.line}</p>
+        <section className="relative flex min-w-0 shrink-0 flex-col lg:min-h-[460px] lg:shrink">
+          <div key={ch.id} className="fade-in relative z-10 px-4 pt-3 sm:px-6 sm:pt-5">
+            <h1 className="max-w-[34rem] font-serif text-[26px] leading-[1.05] text-foam sm:text-[clamp(2rem,3.4vw,3.4rem)] sm:leading-[1.02]">{ch.title}</h1>
+            <p className="mt-1.5 max-w-[32rem] text-[13px] leading-snug text-mist sm:mt-2.5 sm:text-[15px] sm:leading-relaxed">{ch.line}</p>
             {ci === 0 && (
-              <p className="mt-4 max-w-[32rem] border-l-2 border-calm pl-3 text-[14px] leading-relaxed text-foam/85">
+              <p className="mt-2 max-w-[32rem] border-l-2 border-calm pl-3 text-[13px] leading-snug text-foam/85 sm:mt-4 sm:text-[14px] sm:leading-relaxed">
                 Aino is a simulated patient. You follow the same six months twice, once with Keel and once without.
                 Each turn of the sun is one day in her home.
               </p>
             )}
             {ch.id === 'well' && (
-              <nav className="mt-5 grid max-w-[30rem] gap-2" aria-label="Where to look next">
+              <nav className="mt-3 grid max-w-[30rem] grid-cols-3 gap-1.5 sm:mt-5 sm:grid-cols-1 sm:gap-2" aria-label="Where to look next">
                 {[['#/phone', 'What Aino sees', 'Three questions a day on her phone, and nothing about risk'],
                   ['#/clinic', 'What her nurse sees', 'Who to call this week, and why'],
                   ['#/proof', 'How we know it works', '300 simulated patients, real wearable data and the whitepaper']].map(([href, t, sub]) => (
-                  <a key={href} href={href} className="group rounded-xl border border-foam/20 px-4 py-2.5 hover:border-foam hover:bg-foam/5">
-                    <div className="text-[15px] text-foam">{t}</div>
-                    <div className="text-[12px] text-mist">{sub}</div>
+                  <a key={href} href={href} className="group rounded-xl border border-foam/20 px-2.5 py-2 hover:border-foam hover:bg-foam/5 sm:px-4 sm:py-2.5">
+                    <div className="text-[13px] leading-tight text-foam sm:text-[15px]">{t}</div>
+                    <div className="hidden text-[12px] text-mist sm:block">{sub}</div>
                   </a>
                 ))}
               </nav>
             )}
             {world === 'none' && d >= 0 && (
-              <button onClick={() => setOverride('keel')} className="mt-3 inline-flex items-center gap-2 rounded-full bg-storm/20 px-3 py-1 text-[12px] text-storm hover:bg-storm/30">
+              <button onClick={() => setOverride('keel')} className="mt-2 inline-flex sm:mt-3 items-center gap-2 rounded-full bg-storm/20 px-3 py-1 text-[12px] text-storm hover:bg-storm/30">
                 Same six months, without Keel <span className="text-storm/70 underline underline-offset-2">show with Keel</span>
               </button>
             )}
           </div>
-          <div className="relative min-h-0 flex-1">
+          <div className={`relative ${ci === 0 ? 'h-[120px]' : 'h-[150px]'} shrink-0 lg:h-auto lg:min-h-0 lg:flex-1 ${ch.id === 'well' ? 'hidden lg:block' : ''}`}>
             <div className="absolute inset-0"><HouseScene inp={house} onActivity={setAct} /></div>
             {act && (
-              <div className="pointer-events-none absolute left-6 top-3 text-[13px]">
+              <div className="pointer-events-none absolute left-4 top-1 text-[11px] sm:left-6 sm:top-3 sm:text-[13px]">
                 <span className="tabular-nums text-foam">{act.clock}</span>
                 <span key={act.what} className="fade-in ml-3 text-mist">{act.what}</span>
               </div>
@@ -123,22 +124,22 @@ export default function StoryPage({ story }: { story: Story }) {
         </section>
 
         {/* right: what is measured, forecast, what is done */}
-        <section className="flex min-h-0 min-w-0 flex-col gap-3 px-4 pb-3 pt-4 sm:px-5 lg:overflow-hidden lg:pl-2 lg:pr-6">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <div className="text-[13px] text-mist">
+        <section className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-hidden px-4 pb-2 pt-2 sm:gap-3 sm:px-5 sm:pb-3 sm:pt-4 lg:pl-2 lg:pr-6">
+          <div className="flex items-center justify-between gap-2">
+            <div className="whitespace-nowrap text-[12px] text-mist sm:text-[13px]">
               {ci === 0 ? <>Before treatment</> : d < 0 ? <>TMS course · week {Math.floor((d + 42) / 7) + 1}{sessionNo ? `, session ${sessionNo} of 30` : ''}</> : <>Day {d} at home</>}
             </div>
             {d >= 14 && keelRec && world === 'keel' && (
-              <div className="flex items-center gap-2 text-[13px]">
+              <div className="flex items-center gap-2 text-[12px] sm:text-[13px]">
                 <Who who="nurse" />
-                <span className="text-mist">2-week outlook</span>
-                <span className="rounded-full px-2.5 py-0.5 font-medium text-sea transition-colors" style={{ background: riskColor(keelRec.risk) }}>
-                  {riskWord(keelRec.risk)} · {keelRec.risk > 0.95 ? 'over 95' : keelRec.risk < 0.02 ? 'under 2' : Math.round(keelRec.risk * 100)}% relapse risk
+                <span className="hidden text-mist sm:inline">2-week outlook</span>
+                <span className="whitespace-nowrap rounded-full px-2.5 py-0.5 font-medium text-sea transition-colors" style={{ background: riskColor(keelRec.risk) }}>
+                  {riskWord(keelRec.risk)} · {keelRec.risk > 0.95 ? 'over 95' : keelRec.risk < 0.02 ? 'under 2' : Math.round(keelRec.risk * 100)}%<span className="hidden sm:inline"> relapse risk</span>
                 </span>
               </div>
             )}
           </div>
-          <div className="min-h-[260px] flex-1 border-t border-foam/15 lg:min-h-[150px]">
+          <div className={`min-h-[140px] flex-1 border-t border-foam/15 lg:min-h-[150px] ${ch.id === 'well' ? 'hidden lg:block' : ''}`}>
             <MoodChart story={story} day={day} world={world} />
           </div>
 
@@ -166,9 +167,13 @@ export default function StoryPage({ story }: { story: Story }) {
                 )}
               </div>
               {world === 'none' && d >= 0 ? (
-                <Unnoticed story={story} day={d} />
+                <div className="hidden md:block"><Unnoticed story={story} day={d} /></div>
               ) : ch.id === 'warning' && story.events.alert != null && d >= story.events.alert ? (
-                <ClinicToast story={story} />
+                <>
+                  <div className="hidden md:block"><ClinicToast story={story} /></div>
+                  {/* phones: the nurse's notification drops in over everything */}
+                  <div className="toast-in fixed inset-x-3 top-3 z-50 shadow-[0_12px_40px_rgba(0,0,0,.45)] md:hidden"><ClinicToast story={story} /></div>
+                </>
               ) : (
               <div className="hidden border-t border-foam/15 pt-4 md:block">
                 <h3 className="mb-2 flex items-center gap-2 text-[13px] font-medium text-foam">What helps {story.profile.name}{d >= 1 && <Who who="aino" />}</h3>
@@ -239,7 +244,7 @@ function Results({ story }: { story: Story }) {
     { label: 'Keel', v: keel.relapse_free_180, color: '#62c2a6' },
   ]
   return (
-    <div className="fade-in grid grid-cols-1 gap-3 border-t border-foam/15 pt-4 md:grid-cols-[1.3fr_1fr]">
+    <div className="fade-in grid grid-cols-1 gap-3 border-t border-foam/15 pt-3 md:grid-cols-[1.3fr_1fr] md:pt-4">
       <div>
         <h3 className="mb-3 text-[13px] font-medium text-foam">Still well 6 months after TMS</h3>
         <div className="space-y-2.5">
@@ -251,7 +256,7 @@ function Results({ story }: { story: Story }) {
           ))}
         </div>
       </div>
-      <div className="space-y-3 text-[13px] leading-snug text-mist">
+      <div className="hidden space-y-3 text-[13px] leading-snug text-mist md:block">
         <p><span className="font-serif text-[30px] text-foam">{c.forecast.median_warning_days_keel} days</span><br />typical warning before a relapse, against {c.forecast.median_warning_days_checkin_only} from check-ins alone at the same false-alarm rate</p>
         <p><span className="font-serif text-[30px] text-foam">{keel.boosters_per_patient.toFixed(1)}</span> booster blocks per person in 6 months, only when the forecast called for one</p>
       </div>
@@ -262,10 +267,11 @@ function Results({ story }: { story: Story }) {
 /** Who sees this: the patient, or only her care team. */
 function Who({ who, light = false }: { who: 'aino' | 'nurse'; light?: boolean }) {
   const t = who === 'aino' ? 'Aino sees this' : 'Only her nurse sees this'
+  const short = who === 'aino' ? 'Aino sees' : 'Nurse only'
   const c = who === 'aino'
     ? (light ? 'border-[#2e8c73]/40 text-[#2e8c73]' : 'border-calm/50 text-calm')
     : (light ? 'border-[#b5443a]/40 text-[#b5443a]' : 'border-storm/50 text-storm')
-  return <span className={`whitespace-nowrap rounded-full border px-2 py-[1px] text-[10px] font-normal ${c}`}>{t}</span>
+  return <span className={`whitespace-nowrap rounded-full border px-2 py-[1px] text-[10px] font-normal ${c}`}><span className="sm:hidden">{short}</span><span className="hidden sm:inline">{t}</span></span>
 }
 
 function Timeline({ chapters, ci, day, onGo, onPrev, onNext, world, onWorld, canToggle, auto, onAuto }: {

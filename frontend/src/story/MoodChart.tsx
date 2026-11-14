@@ -39,6 +39,7 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
   const boosterEnd = ev.booster[ev.booster.length - 1]
   const relapseY = y(story.relapse_phq)
   const strongKeel = world === 'keel'
+  const sm = W < 520            // phone: fewer labels, the legend names the two lives
   // name the two lives right where they are drawn, so the comparison needs no legend
   const head = (pts: ([number, number] | null)[]) => { for (let i = pts.length - 1; i >= 0; i--) if (pts[i]) return pts[i]!; return null }
   const kH = day >= 3 ? head(moodPts) : null
@@ -47,28 +48,42 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
   const apart = !!(kH && nH && Math.abs(kY - nY) > 28)   // label only once the two lives have visibly split
   if (kH && nH && Math.abs(kY - nY) < 16) { const mid = (kY + nY) / 2; if (kY <= nY) { kY = mid - 8; nY = mid + 8 } else { kY = mid + 8; nY = mid - 8 } }
 
+  const items: { label: string; color: string; kind: 'line' | 'dash' | 'fan'; show: boolean }[] = [
+    { label: day < 0 ? 'How she feels' : sm ? 'With Keel' : 'How she feels, with Keel', color: '#f3efe6', kind: 'line', show: true },
+    { label: sm ? 'Without Keel' : 'Same life, without Keel', color: '#ef6a5b', kind: 'line', show: day >= 0 },
+    { label: sm ? 'Ring' : 'What her ring says', color: '#8ec5ff', kind: 'dash', show: day >= 3 && world === 'keel' },
+    { label: 'Next 2 weeks', color: fc, kind: 'fan', show: !sm && day >= 14 && world === 'keel' },
+  ]
+  const legend: { label: string; color: string; kind: 'line' | 'dash' | 'fan'; x: number }[] = []
+  let lx = 0
+  for (const it of items.filter((i) => i.show)) {
+    const w = 30 + it.label.length * 6.1
+    if (lx + w > W - m.l - 4) break
+    legend.push({ ...it, x: lx }); lx += w + 14
+  }
+
   return (
     <div ref={ref} className="relative h-full w-full">
       {width > 60 && height > 60 && <svg width={W} height={H} className="block" role="img" aria-label="Depression score over time">
         {/* relapse zone */}
         <rect x={m.l} y={m.t} width={W - m.l - m.r} height={relapseY - m.t} fill="#ef6a5b" opacity={0.08} />
         <line x1={m.l} x2={W - m.r} y1={relapseY} y2={relapseY} stroke="#ef6a5b" strokeOpacity={0.7} strokeDasharray="4 4" />
-        <text x={W - m.r - 4} y={relapseY - 6} textAnchor="end" className="fill-storm text-[11px]">Relapse line</text>
-        <text x={W - m.r - 4} y={m.t + 14} textAnchor="end" className="fill-storm/70 text-[11px]">Depression is back</text>
+        {!(sm && day >= found) && <text x={W - m.r - 4} y={relapseY - 6} textAnchor="end" className="fill-storm text-[11px]">Relapse line</text>}
+        {!sm && <text x={W - m.r - 4} y={m.t + 14} textAnchor="end" className="fill-storm/70 text-[11px]">Depression is back</text>}
 
         {/* TMS course and booster shading */}
         <rect x={x(X0)} y={m.t} width={x(0) - x(X0)} height={H - m.b - m.t} fill="#d9b878" opacity={0.07} />
-        <text x={x(-21)} y={H - m.b - 8} textAnchor="middle" className="fill-brass text-[11px]">TMS in the clinic</text>
+        <text x={x(-21)} y={H - m.b - 8} textAnchor="middle" className="fill-brass text-[11px]">{sm ? 'TMS' : 'TMS in the clinic'}</text>
         {boosterStart != null && day >= boosterStart && world === 'keel' && (
           <g>
             <rect x={x(boosterStart)} y={m.t} width={Math.max(3, x(boosterEnd + 1) - x(boosterStart))} height={H - m.b - m.t} fill="#d9b878" opacity={0.22} />
-            <text x={x(boosterStart) + 4} y={m.t + 30} className="fill-brass text-[11px]">Booster TMS</text>
+            {!sm && <text x={x(boosterStart) + 4} y={m.t + 30} className="fill-brass text-[11px]">Booster TMS</text>}
           </g>
         )}
         {ev.visits.filter((v) => v <= X1).map((v) => (
           <g key={v} opacity={day >= v - 30 ? 1 : 0.35}>
             <line x1={x(v)} x2={x(v)} y1={m.t} y2={H - m.b} stroke="#9fb3c4" strokeOpacity={0.35} />
-            <text x={x(v) - 4} y={H - m.b - 8} textAnchor="end" className="fill-mist text-[11px]">{v === 90 ? '3-month visit' : '6-month visit'}</text>
+            {!sm && <text x={x(v) - 4} y={H - m.b - 8} textAnchor="end" className="fill-mist text-[11px]">{v === 90 ? '3-month visit' : '6-month visit'}</text>}
           </g>
         ))}
 
@@ -85,12 +100,12 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
         {fanArea && <path d={fanArea} fill={fc} opacity={0.22} />}
         {fanMid && <path d={fanMid} fill="none" stroke={fc} strokeWidth={1.5} strokeDasharray="2 3" />}
 
-        {/* the other world, faint */}
-        <path d={pathOf(joinTms(without))} fill="none" stroke="#ef6a5b" strokeWidth={strongKeel ? 1.5 : 3} strokeOpacity={strongKeel ? 0.45 : 1} />
+        {/* the same life without Keel: always visible in red, stronger when it is the one being shown */}
+        <path d={pathOf(joinTms(without))} fill="none" stroke="#ef6a5b" strokeWidth={strongKeel ? 2 : 3} strokeOpacity={strongKeel ? 0.8 : 1} strokeLinejoin="round" />
         {day >= found && ev.relapse_without != null && (
           <g>
             <circle cx={x(found)} cy={y(Math.min(Y1, story.none[found].mood ?? story.none[found].phq))} r={5} fill="#ef6a5b" />
-            <text x={x(found) + 8} y={y(Math.min(Y1, story.none[found].mood ?? story.none[found].phq)) - 6} className="fill-storm text-[11px] font-medium">Relapse found at visit</text>
+            <text x={x(found) + 8} y={y(Math.min(Y1, story.none[found].mood ?? story.none[found].phq)) - 6} className="fill-storm text-[11px] font-medium">{sm ? 'Found at visit' : 'Relapse found at visit'}</text>
           </g>
         )}
 
@@ -104,16 +119,16 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
         {ev.life_event.filter((d) => d <= day && d < 70).map((d) => (
           <g key={d}>
             <line x1={x(d)} x2={x(d)} y1={y(3)} y2={m.t + 22} stroke="#f0b24a" strokeOpacity={0.5} strokeDasharray="2 3" />
-            <text x={x(d)} y={m.t + 16} textAnchor="middle" className="fill-squall text-[11px]">Hard week</text>
+            {!sm && <text x={x(d)} y={m.t + 16} textAnchor="middle" className="fill-squall text-[11px]">Hard week</text>}
           </g>
         ))}
         {ev.alert != null && day >= ev.alert && world === 'keel' && (
           <g>
             <circle cx={x(ev.alert)} cy={y(story.keel[ev.alert].mood ?? 10)} r={9} fill="none" stroke="#ef6a5b" strokeWidth={2} />
-            <g transform={`translate(${x(ev.alert) - 10},${y(story.keel[ev.alert].mood ?? 10) + 14})`}>
+            {!sm && <g transform={`translate(${x(ev.alert) - 10},${y(story.keel[ev.alert].mood ?? 10) + 14})`}>
               <rect x={-92} y={0} width={92} height={20} rx={10} fill="#ef6a5b" />
               <text x={-46} y={14} textAnchor="middle" className="fill-sea text-[11px] font-medium">Clinic alerted</text>
-            </g>
+            </g>}
           </g>
         )}
 
@@ -121,25 +136,18 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
         <line x1={x(day)} x2={x(day)} y1={m.t - 8} y2={H - m.b} stroke="#eef3f5" strokeOpacity={0.5} />
 
         {/* the two lives, labelled at their heads */}
-        {apart && kH && <text x={kH[0] - 8} y={kY >= nY ? kY + 18 : kY - 8} textAnchor="end" className={`text-[12px] font-medium ${strongKeel ? 'fill-foam' : 'fill-foam/50'}`}>with Keel</text>}
-        {apart && nH && <text x={nH[0] - 8} y={kY >= nY ? nY - 8 : nY + 18} textAnchor="end" className={`text-[12px] font-medium ${strongKeel ? 'fill-storm/70' : 'fill-storm'}`}>without Keel</text>}
+        {!sm && apart && kH && <text x={kH[0] - 8} y={kY >= nY ? kY + 18 : kY - 8} textAnchor="end" className={`text-[12px] font-medium ${strongKeel ? 'fill-foam' : 'fill-foam/50'}`}>with Keel</text>}
+        {!sm && apart && nH && <text x={nH[0] - 8} y={kY >= nY ? nY - 8 : nY + 18} textAnchor="end" className={`text-[12px] font-medium ${strongKeel ? 'fill-storm/70' : 'fill-storm'}`}>without Keel</text>}
 
-        {/* legend */}
+        {/* legend: laid out left to right, dropping what doesn't fit */}
         <g transform={`translate(${m.l},14)`} className="text-[11px]">
-          <line x1={0} x2={18} y1={0} y2={0} stroke="#f3efe6" strokeWidth={3} />
-          <text x={24} y={4} className="fill-foam">{W > 460 ? 'How she says she feels' : 'She says'}</text>
-          {day >= 3 && (<g transform={`translate(${W > 460 ? 170 : 96},0)`}>
-            <line x1={0} x2={18} y1={0} y2={0} stroke="#8ec5ff" strokeWidth={1.6} strokeDasharray="5 4" />
-            <text x={24} y={4} className="fill-foam">{W > 460 ? 'What her sleep and activity say' : 'Her ring says'}</text>
-          </g>)}
-          {day >= 14 && W > 620 && (<g transform="translate(390,0)">
-            <rect x={0} y={-5} width={18} height={10} fill={fc} opacity={0.35} />
-            <text x={24} y={4} className="fill-foam">Next 2 weeks</text>
-          </g>)}
-          {day >= 0 && W > 720 && (<g transform="translate(490,0)">
-            <line x1={0} x2={18} y1={0} y2={0} stroke="#ef6a5b" strokeWidth={2} strokeOpacity={0.7} />
-            <text x={24} y={4} className="fill-foam">Same life, without Keel</text>
-          </g>)}
+          {legend.map((it) => (
+            <g key={it.label} transform={`translate(${it.x},0)`}>
+              {it.kind === 'fan' ? <rect x={0} y={-5} width={18} height={10} fill={fc} opacity={0.35} />
+                : <line x1={0} x2={18} y1={0} y2={0} stroke={it.color} strokeWidth={it.kind === 'dash' ? 1.8 : 3} strokeDasharray={it.kind === 'dash' ? '5 4' : undefined} />}
+              <text x={24} y={4} className="fill-foam">{it.label}</text>
+            </g>
+          ))}
         </g>
       </svg>}
     </div>

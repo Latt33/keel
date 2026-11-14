@@ -31,6 +31,7 @@ export default function ProofPage() {
   return (
     <div className="mx-auto max-w-[1180px] px-6 py-8">
       <h1 className="font-serif text-[clamp(2.4rem,5vw,4.4rem)] leading-[1.02]">How we know it works.</h1>
+      <Paper />
 
       <RollAPatient outcomes={e.outcomes} n={ev.n_patients} />
 
@@ -66,8 +67,6 @@ export default function ProofPage() {
       </div>
 
       {ev.real_data && <RealData rd={ev.real_data} />}
-
-      <Paper />
     </div>
   )
 }
@@ -286,19 +285,27 @@ function PairChart({ pair }: { pair: Pair }) {
   )
 }
 
-/** The whitepaper, readable in place. Phones get a link instead: most mobile browsers can't show a PDF inline. */
+/** The whitepaper, first thing on the page: what it covers on the left, its first page on the right.
+ *  An image rather than an embedded PDF, so it shows on every browser and phone; a click opens the PDF. */
 function Paper() {
   const href = '/keel-whitepaper.pdf'
   return (
-    <section className="mt-10 border-t border-ink/15 pt-5">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 className="font-serif text-[28px] leading-[1.1]">The whitepaper</h2>
-          <p className="mt-1 max-w-[40rem] text-[15px] text-ink/60">How the digital shadow works, what data it uses, and how SHAP explains what drives each warning.</p>
+    <section className="mt-6 grid grid-cols-1 items-center gap-6 border-t border-ink/15 pt-5 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
+      <div>
+        <div className="text-[13px] text-ink/50">Whitepaper · Aalto University School of Science</div>
+        <h2 className="mt-1 font-serif text-[clamp(1.8rem,3vw,2.6rem)] leading-[1.05]">A digital shadow for staying well after TMS</h2>
+        <p className="mt-3 max-w-[30rem] text-[15px] leading-relaxed text-ink/65">
+          How the model of each patient works, what data it uses, how it was checked against published relapse rates and
+          real wearable data, and how SHAP shows what drives each warning.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <a href={href} target="_blank" rel="noopener" className="rounded-full bg-ink px-6 py-3 text-[15px] tracking-[-0.03em] text-fog">Read the whitepaper</a>
+          <a href={href} download="Keel-whitepaper.pdf" className="rounded-full border border-ink px-6 py-3 text-[15px] tracking-[-0.03em]">Download PDF</a>
         </div>
-        <a href={href} target="_blank" rel="noopener" className="rounded-full bg-ink px-6 py-3 text-[15px] tracking-[-0.03em] text-fog">Open the PDF</a>
       </div>
-      <iframe src={`${href}#view=FitH&toolbar=0`} title="Keel whitepaper" className="mt-5 hidden h-[85vh] w-full rounded-lg border border-ink/15 bg-white md:block" />
+      <a href={href} target="_blank" rel="noopener" className="group block overflow-hidden rounded-lg border border-ink/15 bg-white shadow-[0_10px_40px_rgba(10,14,16,.08)]" aria-label="Open the whitepaper">
+        <img src="/keel-whitepaper-p1.png" alt="First page of the Keel whitepaper" className="block w-full transition-transform duration-500 group-hover:scale-[1.015]" />
+      </a>
     </section>
   )
 }
