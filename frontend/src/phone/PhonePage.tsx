@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api, DOSE_KEYS, DOSE_LABEL, type LiveState, type Story } from '../api'
 import MiniForecast from '../charts/MiniForecast'
-import { riskColor, riskWord } from '../lib'
+import { riskColor } from '../lib'
 import { LearnedBars } from '../story/Panels'
 
 const QUESTIONS = [
@@ -21,6 +21,7 @@ export default function PhonePage({ story }: { story: Story }) {
   const [done, setDone] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [sent, setSent] = useState(false)
+  const [showOutlook, setShowOutlook] = useState(false)
   const screen = useRef<HTMLDivElement>(null)
   useEffect(() => { api.live().then(setSt) }, [])
   useEffect(() => { if (st) setDone(st.plan.slice(0, 1)) }, [st?.day]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -48,21 +49,28 @@ export default function PhonePage({ story }: { story: Story }) {
         {st.alert && (
           <section className="fade-in mt-4 rounded-2xl bg-ink p-4 text-fog">
             <div className="text-[11px] text-fog/60">Espoo TMS clinic</div>
-            <p className="mt-1 text-[14px] leading-snug">Hi {name}, this is Liisa from the clinic. Your sleep has been unsettled this week. I’ll call you tomorrow morning to talk about a few booster sessions.</p>
+            <p className="mt-1 text-[14px] leading-snug">Hi {name}, Liisa here from the clinic. I’d like to check in with you, so I’ll give you a call tomorrow morning. Nothing you need to prepare.</p>
           </section>
         )}
 
-        <section className="mt-4 rounded-2xl bg-white p-4 shadow-[0_1px_0_rgba(20,34,49,.06)]">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[14px] font-semibold">Your next two weeks</h3>
-            <span className="rounded-full px-2.5 py-0.5 text-[12px] font-medium text-sea" style={{ background: riskColor(st.risk) }}>{riskWord(st.risk)}</span>
-          </div>
-          <MiniForecast trend={st.trend} fan={st.fan} risk={st.risk} height={120} />
-          <p className="text-[12px] leading-snug text-ink/60">
-            {st.tier === 'steady' ? 'Things look steady. Keep the small habits going.'
-              : st.tier === 'watch' ? 'Your sleep and activity have shifted a little. Tomorrow’s plan has one more thing in it.'
-                : 'Your rhythm has changed a lot this week. Your care team has been told and will call you.'}
-          </p>
+        <YourWeek st={st} prev={prev} />
+
+        <section className="mt-4 rounded-2xl bg-white p-4">
+          <label className="flex cursor-pointer items-center justify-between gap-3">
+            <span>
+              <span className="block text-[14px] font-semibold">Show my two-week outlook</span>
+              <span className="block text-[12px] text-ink/50">Off unless you and your clinician choose to turn it on.</span>
+            </span>
+            <input type="checkbox" checked={showOutlook} onChange={() => setShowOutlook(!showOutlook)} className="h-5 w-5 accent-[#2e8c73]" />
+          </label>
+          {showOutlook && (
+            <div className="fade-in mt-3">
+              <MiniForecast trend={st.trend} fan={st.fan} risk={st.risk} height={110} gentle />
+              <p className="text-[12px] leading-snug text-ink/60">
+                {st.tier === 'steady' ? 'Looks steady for the next two weeks.' : 'The next two weeks look less settled than usual. This is a forecast, not a diagnosis, and it often turns out fine.'}
+              </p>
+            </div>
+          )}
         </section>
 
         <section className="mt-4 rounded-2xl bg-white p-4">
@@ -120,6 +128,47 @@ export default function PhonePage({ story }: { story: Story }) {
   )
 }
 
+const WEEK_SIGNALS = [
+  { k: 'sleep_regularity', label: 'Regular sleep', word: 'sleep rhythm', up: true },
+  { k: 'rhythm_strength', label: 'Active days, quiet nights', word: 'day/night rhythm', up: true },
+  { k: 'steps', label: 'Moving', word: 'activity', up: true },
+]
+
+/** What the patient sees instead of a risk number: her week against her own usual, and what to do about it. */
+function YourWeek({ st, prev }: { st: LiveState; prev: LiveState | null }) {
+  const rows = WEEK_SIGNALS.map((s) => {
+    const base = st.baseline[s.k], now = st.week[s.k]
+    const rel = base ? now / base : 1
+    return { ...s, rel, off: rel < 0.9 }
+  })
+  const worst = rows.filter((r) => r.off).sort((a, b) => a.rel - b.rel)[0]
+  const added = prev ? st.plan.filter((k) => !prev.plan.includes(k)) : []
+  const tip = added[0] ?? st.plan[0]
+  const i = DOSE_KEYS.indexOf(tip)
+  const helped = i >= 0 && st.learned.sd[i] <= 0.6 && st.learned.mean[i] > 0.4
+  return (
+    <section className="mt-4 rounded-2xl bg-white p-4 shadow-[0_1px_0_rgba(20,34,49,.06)]">
+      <h3 className="text-[14px] font-semibold">Your week, against your usual</h3>
+      <div className="mt-3 space-y-2.5">
+        {rows.map((r) => (
+          <div key={r.k}>
+            <div className="mb-1 flex justify-between text-[12px]"><span className="text-ink/70">{r.label}</span><span className="text-ink/40">{r.off ? 'less than usual' : 'like usual'}</span></div>
+            <div className="relative h-2 rounded-full bg-ink/5">
+              <div className="absolute top-0 h-2 rounded-full bg-[#2e8c73]/70 transition-all duration-500" style={{ width: `${Math.min(100, r.rel * 80)}%` }} />
+              <div className="absolute top-[-3px] h-[14px] w-px bg-ink/40" style={{ left: '80%' }} title="your usual" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-[13px] leading-snug text-ink/70">
+        {worst
+          ? <>Your {worst.word} has been a bit off this week. That happens. {tip ? <>Tomorrow’s plan includes <b className="font-medium text-ink">{DOSE_LABEL[tip].toLowerCase()}</b>{helped ? ', which has helped you before.' : '.'}</> : null}</>
+          : 'Your sleep and activity look like your usual. Keep the small habits going.'}
+      </p>
+    </section>
+  )
+}
+
 function Phone({ children, screenRef }: { children: React.ReactNode; screenRef: React.RefObject<HTMLDivElement | null> }) {
   return (
     <div className="mx-auto w-[390px] max-w-full rounded-[44px] bg-ink p-3 shadow-2xl">
@@ -150,7 +199,7 @@ function BehindTheScenes({ st, prev, sent, onPreset, onReset, name }: {
         <div className="flex items-center gap-2 text-[13px]">
           {prev && <><RiskPill r={prev.risk} /><span className="text-ink/40">to</span></>}
           <RiskPill r={st.risk} />
-          <span className="text-ink/60">chance of relapse in 2 weeks</span>
+          <span className="text-ink/60">chance of relapse in 2 weeks · only her care team sees this</span>
         </div>
       ),
     },
@@ -177,7 +226,7 @@ function BehindTheScenes({ st, prev, sent, onPreset, onReset, name }: {
     <div className="pt-2">
       <h2 className="font-serif text-[30px] leading-tight">Every check-in closes the loop.</h2>
       <p className="mt-2 max-w-[34rem] text-[15px] leading-relaxed text-ink/60">
-        This is {name}’s own model, paused on day {st.day - st.history.length}, two days into her hard week. Her ring has started to notice; she has not said anything yet. Answer as her and watch what changes.
+        This is {name}’s own model, paused on day {st.day - st.history.length}, two days into her hard week. Her ring has started to notice; she has not said anything yet. Answer as her and watch what changes. The phone shows her what she can do; the risk goes to her care team.
       </p>
       <div className="mt-4 flex flex-wrap gap-2 text-[13px]">
         <button onClick={() => onPreset(false)} className="rounded-full border border-ink/20 px-3 py-1.5 hover:bg-white">Answer as a good day</button>

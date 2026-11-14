@@ -64,6 +64,8 @@ def snapshot() -> dict:
         "pareto": pf,
         "contrib": last["contrib"],
         "passive": last["passive"],
+        "week": {k: round(float(np.mean([r["passive"][k] for r in L.log[-7:]])), 3) for k in PASSIVE},
+        "baseline": {k: round(float(L.baseline.mean[i]), 3) for i, k in enumerate(PASSIVE)},
         "alert": bool(L.alerts), "booster_pending": L.world.pending_booster, "streak": L.risk_streak,
         "history": _state.get("history", []),
     }

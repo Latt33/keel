@@ -46,6 +46,21 @@ Built with heavy AI assistance (Claude) for code and copy, directed and reviewed
 | PSYCHE-D dataset (not committed) | Zenodo 5085146 | CC BY-NC 4.0 |
 | Fonts | Newsreader, Schibsted Grotesk via Fontsource | SIL OFL |
 
+## Design decision: the patient does not see a relapse risk
+
+Telling someone in remission that relapse is likely can itself cause distress (labeling and nocebo
+concerns in the depression-screening literature; "emotional burden" was a key concern of remitted
+patients in Coenen et al., JMIR mHealth 2025). Our forecast is tuned to a 10 % false-alarm rate, so some
+warnings will be wrong. So:
+
+* The care team sees the risk, the forecast band and the reasons (clinic view).
+* The patient sees her week against her own usual and what tomorrow's plan adds, in neutral words.
+  The clinic contact is framed as a routine check-in.
+* A two-week outlook can be switched on with the clinician; it has no relapse line and neutral colours.
+* The crisis line is always visible.
+
+This should be tested with patients and clinicians before any real use.
+
 ## Known limitations
 
 * All outcome numbers in the app are simulation results. They show the mechanism works under stated

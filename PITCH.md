@@ -13,7 +13,7 @@ Open the app on **Aino’s story**, full screen. One presenter talks, one clicks
 | 1:25 | Next: Booster | “Five booster sessions, booked from data instead of a crisis.” |
 | 1:35 | Next: Without Keel | “Same life without Keel. Nobody looks between visits. It is found at the 3-month visit, after five weeks of sliding.” |
 | 1:50 | Next: 6 months | “We ran this for 300 virtual patients calibrated to published TMS relapse data: 56 % stay well with usual care, 89 % with Keel, and boosters only when needed, 0.7 per person.” |
-| 2:05 | Aino’s phone | Press *Answer as a bad day*, *Send check-in* three or four times. “This is the live loop: the forecast climbs, tomorrow’s plan changes, and on the third bad day her nurse is told.” |
+| 2:05 | Aino’s phone | Press *Answer as a bad day*, *Send check-in* four times. “This is the live loop: the forecast climbs, tomorrow’s plan changes, and her nurse is told. Notice what Aino does *not* see: no relapse risk. A prediction like that can make people worse, and some warnings are false alarms. She sees her week against her usual and what to do tomorrow. The risk goes to the person who can act on it.” |
 | 2:30 | The clinic | “And this is the nurse’s Monday: two calls about boosters, three to check, nine people she doesn’t need to worry about.” |
 | 2:45 | Close | “We checked ourselves on real data: wearables alone are weak at population level, so Keel compares each person to their own normal and always pairs the ring with a check-in. Next step: a pilot at the clinic, the ring from the last TMS week onward.” |
 
@@ -28,5 +28,6 @@ works on any chapter after discharge.
   and rescue protocols outperform fixed ones in the maintenance rTMS meta-analysis.
 * **Isn’t the brain view fake?** It is labelled a schematic of the model’s estimate. It shows where the
   model’s five symptom dimensions sit anatomically, nothing more.
+* **Doesn’t a warning stress the patient?** That’s why she never sees one. The risk goes to the clinician; the patient sees her rhythm against her usual and a small next step. An opt-in outlook exists for people who want it.
 * **Safety?** No diagnosis to the patient, an always-visible crisis path, and the clinician makes every
   treatment decision.

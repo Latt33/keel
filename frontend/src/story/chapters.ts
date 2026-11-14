@@ -26,7 +26,7 @@ export function chaptersFor(st: Story): Chapter[] {
     { id: 'storm', start: life - 3, end: alert - 1, world: 'keel', title: 'A hard week. Her body notices first.',
       line: 'Her sleep slips and her days flatten out. She still says she feels fine.' },
     { id: 'warning', start: alert - 1, end: b0 - 1, world: 'keel', title: `Keel sees the relapse coming ${lead} days early.`,
-      line: 'Her plan steps up, and her clinic gets her name at the top of this week’s call list, with the reasons.' },
+      line: 'Aino just sees one more small thing in tomorrow’s plan. Her nurse sees the forecast, with the reasons, at the top of this week’s call list.' },
     { id: 'booster', start: b0 - 1, end: b1 + 10, world: 'keel', coil: true, title: 'Five booster sessions, booked before a crisis.',
       line: 'A short TMS block, timed by the forecast instead of a fixed calendar.' },
     { id: 'without', start: b1 + 10, end: found + 2, world: 'none', title: 'Without Keel, the same week becomes a relapse.',

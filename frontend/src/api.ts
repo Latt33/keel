@@ -42,6 +42,7 @@ export interface LiveState {
   learned: { mean: number[]; sd: number[] }
   pareto: { front: { doses: string[]; relief: number; minutes: number }[]; all: { relief: number; minutes: number }[] }
   contrib: Record<string, number>; passive: Record<string, number>
+  week: Record<string, number>; baseline: Record<string, number>
   alert: boolean; booster_pending: number | null; streak: number
   history: { day: number; phq: number; risk_before: number; risk_after: number; done: string[] }[]
   changed?: { risk_before: number; risk_after: number }
