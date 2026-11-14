@@ -1,186 +1,179 @@
-<a href="docs/demo.mp4"><img src="media/cover.png" alt="Keel: staying well after TMS" width="100%"></a>
+<div align="center">
+
+<a href="https://keel-q220.onrender.com"><img src="media/cover.png" alt="Keel: staying well after TMS" width="100%"></a>
 
 # Keel
 
-**Staying well after TMS.** Keel is a closed loop for the months after a course of transcranial magnetic
-stimulation (TMS) for depression. It senses how someone is doing at home, forecasts relapse two weeks
-ahead, suggests a small personal plan each day, learns what actually helps that person, and tells the
-clinic who needs a booster before a crisis.
+**Staying well at home after TMS for depression.**
 
-Built at **Junction 2026** for the Aalto NBE challenge *Help people stay well at home after
-depression treatment*.
+[**Try the live demo**](https://keel-q220.onrender.com) · [Read the whitepaper](docs/paper/keel.pdf) · [Watch the 90-second demo](docs/demo.mp4)
 
-<p>
-  <a href="https://keel-q220.onrender.com"><b>Try the live demo</b></a> ·
-  <a href="docs/paper/keel.pdf"><b>Read the whitepaper (PDF)</b></a> ·
-  <a href="docs/demo.mp4"><b>Watch the 90-second demo</b></a> ·
-  <a href="HONESTY.md">What is simulated and what is real</a> ·
-  <a href="PITCH.md">3-minute pitch script</a>
-</p>
+Junction 2026 · Aalto NBE challenge *Help people stay well at home after depression treatment*
 
-## Overview
+</div>
 
-About half of the people helped by TMS relapse within a year, and most of that slide happens
-between clinic visits, where nobody is looking. Keel fills that gap with three things the patient barely
-notices and one thing the clinic acts on:
+---
 
-- **A ring** records sleep, day/night rhythm, activity and heart rate variability, compared with the
-  person's own normal from their last two weeks of TMS.
-- **Three questions a day** arrive as a notification. They follow the structure of the Beck Depression
-  Inventory (21 topics over a week, neutral wording, each starting from "about as usual") and take under
-  a minute.
-- **A digital shadow** (a mechanistic model of that patient) turns both streams into a two-week relapse
-  forecast and learns which small daily actions help this particular person.
-- **The care team** gets a ranked call list with the reasons. The patient never sees a risk number.
+## The problem
 
-| | | |
-|:---:|:---:|:---:|
-| <img src="media/day.gif" width="260" alt="Aino's day in the house scene"> | <img src="media/phone.png" width="190" alt="The patient app"> | <img src="docs/screens/11-clinic.png" width="320" alt="The clinic view"> |
-| **Aino's story.** One virtual patient lived twice, with Keel and without. Each turn of the sun is one day; her routine follows the model's state. | **Aino's phone.** Her path since discharge, one notification a day, and "what has been helping you" if she wants to look. | **The clinic.** Everyone discharged after TMS, ranked by who needs a call this week, with one-click booster booking. |
+Transcranial magnetic stimulation (TMS) lifts depression for many people that medication did not help.
+The hard part comes after: about half of those who recover relapse within a year, and most of that
+slide happens at home, between clinic visits, where nobody is looking. Fixed monthly boosters cost
+clinic time for people who don't need them and still miss people who do.
 
-## How it works
+## What Keel does
 
-<img src="docs/screens/06-warning.png" alt="The warning chapter: forecast crosses the line and the clinic is told" width="100%">
+Keel is a closed loop for the months after a TMS course: it **senses** how someone is doing,
+**forecasts** relapse two weeks ahead, **suggests** one or two small things each day, **learns** what
+actually helps that person, and **tells the clinic** who needs a call or a booster before a crisis.
 
-| Step | What happens | Code |
-|---|---|---|
-| **Sense** | Three BDI-structured questions a day plus ring signals: sleep regularity, day/night rhythm, sleep efficiency, night waking, steps, HRV | `backend/keel/items.py`, `backend/keel/sim.py` |
-| **Personal normal** | Baseline from the last two weeks of the TMS course; every later day is a z-score against *her* normal | `forecast.py` `Baseline` |
-| **Forecast** | The body signal is converted to PHQ-9 points, then a 300-member ensemble of the next 14 days. The share of futures crossing the relapse line is the risk | `forecast.py` `Tracker` |
-| **Plan** | All 63 combinations of six small activities scored on relief against minutes of effort (Pareto front). Thompson sampling picks today's plan, which grows when risk rises | `planner.py` |
-| **Learn** | Bayesian regression on her own days estimates what each activity does for her, with a slow baseline so illness drift is not credited to an activity | `learner.py` |
-| **Escalate** | Three high-risk days in a row put her on the clinic list with the reasons, and a five-session booster is suggested | `loop.py`, `clinic.py` |
-| **Explain** | Exact linear attributions for the body signal and TreeSHAP on a risk surrogate show which signals drive each warning | `scripts/paper_figures.py` |
+| Who | What they see |
+|---|---|
+| **The patient** | One notification a day with three short questions, their path since discharge, and what has been helping them. Never a risk number. |
+| **The nurse** | A weekly call list ranked by risk, with the reasons behind each name and one-click booster booking. |
+| **Keel** | The ring's sleep, rhythm, activity and heart rate variability, compared with the person's own normal, plus every answer. |
 
-The full method, data streams and SHAP analysis are in the [whitepaper](docs/paper/keel.pdf).
+## What's new
 
-## Results
+- **A digital shadow of each patient.** A mechanistic model of how the TMS benefit fades, how stress
+  and life events push symptoms, and how small daily actions push back. It is calibrated to published
+  relapse rates and personalised from the person's own data.
+- **The body speaks first.** The ring's signals, compared with the person's own baseline from the last
+  two weeks of TMS, are turned into the same units as their answers. In a hard week they move before
+  the person says anything is wrong.
+- **Boosters when they matter, not by calendar.** The forecast times a short booster block instead of
+  a fixed schedule: 0.7 blocks per person in six months rather than six.
+- **It learns what helps each person** with Bayesian updating on their own days, starting from what
+  helps most people.
+- **It explains itself.** Every warning comes with the signals that drove it (SHAP attributions), so
+  the nurse knows what to ask about.
+- **Questions that don't lead.** Three items a day, structured like the Beck Depression Inventory,
+  21 topics over a week, each starting from "about as usual". A safety item opens a crisis path.
 
-300 virtual patients over 180 days, each living the same life (same stress, same noise) under four
-policies. The untreated arm is calibrated to the rTMS durability meta-analysis (Senova et al. 2019:
-66.5 % and 52.9 % still in response at 3 and 6 months).
+## How it scales
 
-| Policy | Relapse-free at 6 months | Days spent relapsed | Booster blocks per person |
+- **Cheap to run.** A full 180-day patient, simulated twice, takes about half a second on one CPU core;
+  the server runs in about 100 MB of memory.
+- **Light on clinic time.** In a caseload of 14 discharged patients, the list says who needs a call this
+  week (two, in the demo) and lets the nurse leave everyone else alone.
+- **Light on patients.** Under a minute a day, plus a ring they wear anyway.
+- **Hardware-agnostic.** Any wearable that reports sleep, steps and heart rate variability works; an
+  Oura importer is included.
+- **Useful from day one.** Personal models start from the population and sharpen as the person's own
+  days come in.
+
+## What it is built on
+
+- **Clinical evidence:** the rTMS durability meta-analysis (Senova et al. 2019) for relapse rates, and
+  the maintenance rTMS literature showing rescue boosters outperform fixed schedules.
+- **Questionnaire structure:** the Beck Depression Inventory, rewritten in our own neutral wording.
+- **Real wearable data:** PSYCHE-D (Makhmutova et al. 2021), 7 291 three-month windows from 3 069
+  people, to check what a ring alone can and cannot tell.
+- **Our earlier project:** [StimIQ](https://github.com/Latt33/StimIQ), a digital shadow for deep brain
+  stimulation, where the approach started.
+- **Stack:** Python, NumPy and FastAPI for the model; scikit-learn and SHAP for explanations; React,
+  Three.js and Tailwind for the web app.
+
+## How it performs
+
+300 simulated patients over 180 days, each living the same life (same stress, same noise) under four
+kinds of care. The untreated arm matches published relapse rates (66.5 % and 52.9 % still in
+response at 3 and 6 months).
+
+<div align="center">
+
+| Care | Relapse-free at 6 months | Days spent relapsed | Booster blocks per person |
 |---|:---:|:---:|:---:|
 | Usual care (nothing until the next visit) | 56 % | 41.8 | 0 |
 | Same healthy-habits plan for everyone | 66 % | 29.2 | 0 |
 | Keel plan only (no clinic escalation) | 70 % | 24.3 | 0 |
 | **Keel** | **89 %** | **2.4** | **0.69** |
 
-- **Earlier warning.** AUC 0.94 for "crosses the relapse line within 14 days", against 0.91 for
-  check-ins alone. At the same 10 % false-alarm rate, the median warning comes 23 days before relapse
-  instead of 16.
+</div>
+
+- **Earlier warning.** AUC 0.94 for "relapses within 14 days", against 0.91 for check-ins alone. At the
+  same 10 % false-alarm rate, the median warning comes **23 days** before relapse instead of 16.
 - **Personal learning.** After six months, Keel's two favourite activities for a person are in that
   person's true top three 83 % of the time, against 59 % for the population guess.
-- **Boosters when they matter.** Most of the gain comes from timing boosters, not from the habits
-  plan. This matches the clinical literature, where rescue maintenance rTMS outperforms fixed schedules.
+- **Honest about real data.** On PSYCHE-D, consumer wearables alone barely beat a coin flip three
+  months ahead (AUC 0.60; the questionnaire alone 0.79). That is why Keel compares each person with
+  their own normal, looks two weeks ahead, and always pairs the ring with a check-in. The simulator's
+  numbers are an upper bound; [HONESTY.md](HONESTY.md) lists every assumption.
 
-### Real-data check
+## How to use it
 
-On **PSYCHE-D** (Makhmutova et al. 2021, 7 291 three-month windows from 3 069 people), predicting
-PHQ-9 ≥ 10 three months ahead with person-grouped cross-validation:
+**Online:** open the [live demo](https://keel-q220.onrender.com) and press *Follow Aino's six months*.
+The free server sleeps after 15 idle minutes, so the first visit can take about a minute.
 
-| Inputs | AUC |
-|---|:---:|
-| Fitbit sleep and steps only | 0.60 |
-| PHQ-9 now only | 0.79 |
-| Both | 0.78 |
-
-A population model on consumer wearable data says little three months ahead. That is why Keel compares
-each person with **their own** baseline, forecasts **two weeks** rather than three months, and always
-pairs the ring with a daily check-in. The simulator's 0.94 is an upper bound under its assumptions;
-the PSYCHE-D number is the floor to beat with real post-TMS data. See [HONESTY.md](HONESTY.md).
-
-## Tech stack
-
-- **Model and API:** Python, NumPy, FastAPI, scikit-learn and SHAP for the explanations, pytest
-- **Web:** React 19, TypeScript, Vite, Tailwind CSS 4, three.js with React Three Fiber, Geist
-- **Paper:** LaTeX, TikZ, Matplotlib
-
-## Getting started
-
-### Prerequisites
-
-Python 3.11+ and Node 20+.
-
-### Install
+**Locally** (Python 3.11+ and Node 20+):
 
 ```bash
 python -m pip install -r backend/requirements.txt
-npm install
-cd frontend && npm install && cd ..
+npm install && (cd frontend && npm install)
+npm run dev                      # API on :8000, app on http://localhost:5180
 ```
 
-### Run
+**With Docker:**
 
 ```bash
-npm run dev          # API on :8000 and the app on :5180
+docker build -t keel . && docker run -p 8000:8000 keel   # http://localhost:8000
 ```
 
-Open http://localhost:5180. For a single-port demo, run `npm run build`, then `npm run serve`, and
-open http://localhost:8000.
+On [Render](https://render.com), choose **New → Blueprint** and pick this repository; `render.yaml`
+sets up a free web service.
 
-### Reproduce the numbers
+<details>
+<summary><b>Reproduce the numbers and the whitepaper</b></summary>
 
 ```bash
 python -m pip install -r backend/requirements-research.txt
 cd backend
-python -m pytest -q                                              # model and API tests
-python -m scripts.evaluate 300                                   # cohort results
+python -m pytest -q                                               # model and API tests
+python -m scripts.evaluate 300                                    # cohort results
 python -m scripts.psyched_baseline ../data/anon_processed_df_parquet
-python -m scripts.paper_figures ../data/anon_processed_df_parquet # whitepaper figures
+python -m scripts.paper_figures ../data/anon_processed_df_parquet  # whitepaper figures
 ```
 
 The PSYCHE-D file is not committed (CC BY-NC licence); `data/README.md` has the download command.
 Rebuild the paper with `latexmk -pdf keel.tex` in `docs/paper/`.
 
-### Deploy
+</details>
 
-The repo builds into one container: the web app is compiled inside the image and the API serves it.
-
-```bash
-docker build -t keel .
-docker run -p 8000:8000 keel        # then open http://localhost:8000
-```
-
-The live demo runs at https://keel-q220.onrender.com on Render's free plan; the first visit after
-15 idle minutes takes about a minute to wake up. On [Render](https://render.com), choose **New → Blueprint** and pick this repository; `render.yaml`
-sets up a free Docker web service with a health check. Any host that runs a Dockerfile and sets
-`PORT` works the same way (Railway, Fly.io, Google Cloud Run). Each browser tab gets its own copy of
-Aino's phone, so visitors of a shared link don't move each other's patient.
-
-### Your own ring (Oura)
+<details>
+<summary><b>Try it with your own Oura ring</b></summary>
 
 Put an Oura API v2 export (`sleep` and `daily_activity` JSON) or a CSV export in `data/oura/`. A
 **Your ring** tab appears: the first 14 days become your normal, and every later day shows the drift
 from it and the two-week outlook. At least 21 days with sleep, steps and HRV are needed.
 
-## Repository
+</details>
+
+<details>
+<summary><b>Repository layout</b></summary>
 
 ```
 backend/keel/       virtual patient, forecast, learner, planner, loop, items, story, clinic, live API
 backend/scripts/    evaluation, forecast calibration, PSYCHE-D baseline, paper figures, Oura replay
 backend/tests/      model and API tests
-frontend/src/       landing, story, house (her day in 3D), phone, clinic, proof, brain
+frontend/src/       landing, story, house (her day in 3D), phone, clinic, evidence, brain
 docs/paper/         whitepaper source, PDF and figures
-docs/screens/       screenshots of every chapter and view
 ```
 
-## The team
+</details>
 
-All four of us study at the Aalto University School of Science.
+## Team
 
-- **Atte Laakso** ([LinkedIn](https://www.linkedin.com/in/atte-laakso/))
-- **Konsta Kiirikki** ([LinkedIn](https://www.linkedin.com/in/konsta-kiirikki/))
-- **Nikolas Juhava** ([LinkedIn](https://www.linkedin.com/in/nikolas-juhava/))
-- **Qilun Li** ([LinkedIn](https://www.linkedin.com/in/qilun-li-2a56ba191/))
+<div align="center">
+
+**[Atte Laakso](https://www.linkedin.com/in/atte-laakso/)** · **[Konsta Kiirikki](https://www.linkedin.com/in/konsta-kiirikki/)** · **[Nikolas Juhava](https://www.linkedin.com/in/nikolas-juhava/)** · **[Qilun Li](https://www.linkedin.com/in/qilun-li-2a56ba191/)**
+
+Aalto University School of Science
+
+</div>
 
 ## Acknowledgments
 
-- Aalto NBE for the challenge at Junction 2026
-- PSYCHE-D by Makhmutova et al. (Zenodo 5085146, CC BY-NC 4.0)
-- Brain model "Brain" by maheshshinde777 on Sketchfab (CC BY 4.0)
-- Geist typeface (SIL Open Font License)
-- Our earlier project [StimIQ](https://github.com/Latt33/StimIQ), where the digital shadow idea started
+Aalto NBE for the challenge · PSYCHE-D by Makhmutova et al. (Zenodo 5085146, CC BY-NC 4.0) ·
+Brain model "Brain" by maheshshinde777 on Sketchfab (CC BY 4.0) · Geist typeface (SIL Open Font License)
 
-Keel is a research demonstrator, not a medical device. Every patient in the demo is simulated.
+<sub>Keel is a research demonstrator, not a medical device. Every patient in the demo is simulated.</sub>

@@ -36,7 +36,7 @@ export default function App() {
           <span className="hidden text-[19px] leading-none tracking-[-0.02em] sm:inline">Keel</span>
         </a>
         <nav className="ml-auto flex min-w-0 items-center gap-1 overflow-x-auto text-[13px] sm:gap-3 sm:text-[16px]">
-          {([['story', 'Aino’s story', 'Story'], ['phone', 'Aino’s phone', 'Phone'], ['clinic', 'The clinic', 'Clinic'], ['proof', 'How we know', 'Evidence'], ...(hasRing ? [['ring', 'Your ring', 'Ring']] : [])] as [Route, string, string][]).map(([r, label, short]) => (
+          {([['story', 'Aino’s story', 'Story'], ['phone', 'What Aino sees', 'Aino'], ['clinic', 'What her nurse sees', 'Nurse'], ['proof', 'How we know', 'Evidence'], ...(hasRing ? [['ring', 'Your ring', 'Ring']] : [])] as [Route, string, string][]).map(([r, label, short]) => (
             <a key={r} href={`#/${r}`} aria-current={route === r ? 'page' : undefined}
               className={`whitespace-nowrap px-1.5 py-1 tracking-[-0.03em] decoration-1 underline-offset-[6px] sm:px-2 ${route === r ? 'underline' : 'hover:underline'} ${light ? 'text-ink' : 'text-foam'}`}>
               <span className="hidden sm:inline">{label}</span><span className="sm:hidden">{short}</span>

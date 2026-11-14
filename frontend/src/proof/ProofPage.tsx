@@ -66,6 +66,8 @@ export default function ProofPage() {
       </div>
 
       {ev.real_data && <RealData rd={ev.real_data} />}
+
+      <Paper />
     </div>
   )
 }
@@ -281,5 +283,22 @@ function PairChart({ pair }: { pair: Pair }) {
         </svg>
       )}
     </div>
+  )
+}
+
+/** The whitepaper, readable in place. Phones get a link instead: most mobile browsers can't show a PDF inline. */
+function Paper() {
+  const href = '/keel-whitepaper.pdf'
+  return (
+    <section className="mt-10 border-t border-ink/15 pt-5">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 className="font-serif text-[28px] leading-[1.1]">The whitepaper</h2>
+          <p className="mt-1 max-w-[40rem] text-[15px] text-ink/60">How the digital shadow works, what data it uses, and how SHAP explains what drives each warning.</p>
+        </div>
+        <a href={href} target="_blank" rel="noopener" className="rounded-full bg-ink px-6 py-3 text-[15px] tracking-[-0.03em] text-fog">Open the PDF</a>
+      </div>
+      <iframe src={`${href}#view=FitH&toolbar=0`} title="Keel whitepaper" className="mt-5 hidden h-[85vh] w-full rounded-lg border border-ink/15 bg-white md:block" />
+    </section>
   )
 }

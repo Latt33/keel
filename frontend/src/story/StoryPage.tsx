@@ -22,7 +22,7 @@ export default function StoryPage({ story }: { story: Story }) {
     if (target == null) return
     const from = day
     const dist = Math.abs(target - from)
-    const dur = clamp(dist / 22, 0.9, 4.5) * 1000
+    const dur = clamp(dist / 30, 0.8, 2.8) * 1000
     const t0 = performance.now()
     const tick = (now: number) => {
       const k = clamp((now - t0) / dur, 0, 1)
@@ -87,9 +87,28 @@ export default function StoryPage({ story }: { story: Story }) {
           <div key={ch.id} className="fade-in relative z-10 px-6 pt-5">
             <h1 className="max-w-[34rem] font-serif text-[clamp(2rem,3.4vw,3.4rem)] leading-[1.02] text-foam">{ch.title}</h1>
             <p className="mt-2.5 max-w-[32rem] text-[15px] leading-relaxed text-mist">{ch.line}</p>
-            {ci === 0 && <p className="mt-4 hidden text-[13px] text-mist/70 sm:block">Press Start, or the right arrow key, to follow her through six months.</p>}
+            {ci === 0 && (
+              <p className="mt-4 max-w-[32rem] border-l-2 border-calm pl-3 text-[14px] leading-relaxed text-foam/85">
+                Aino is a simulated patient. You follow the same six months twice, once with Keel and once without.
+                Each turn of the sun is one day in her home.
+              </p>
+            )}
+            {ch.id === 'well' && (
+              <nav className="mt-5 grid max-w-[30rem] gap-2" aria-label="Where to look next">
+                {[['#/phone', 'What Aino sees', 'Three questions a day on her phone, and nothing about risk'],
+                  ['#/clinic', 'What her nurse sees', 'Who to call this week, and why'],
+                  ['#/proof', 'How we know it works', '300 simulated patients, real wearable data and the whitepaper']].map(([href, t, sub]) => (
+                  <a key={href} href={href} className="group rounded-xl border border-foam/20 px-4 py-2.5 hover:border-foam hover:bg-foam/5">
+                    <div className="text-[15px] text-foam">{t}</div>
+                    <div className="text-[12px] text-mist">{sub}</div>
+                  </a>
+                ))}
+              </nav>
+            )}
             {world === 'none' && d >= 0 && (
-              <div className="mt-3 inline-block rounded-full bg-storm/20 px-3 py-1 text-[12px] text-storm">Showing the world without Keel</div>
+              <button onClick={() => setOverride('keel')} className="mt-3 inline-flex items-center gap-2 rounded-full bg-storm/20 px-3 py-1 text-[12px] text-storm hover:bg-storm/30">
+                Same six months, without Keel <span className="text-storm/70 underline underline-offset-2">show with Keel</span>
+              </button>
             )}
           </div>
           <div className="relative min-h-0 flex-1">
@@ -111,6 +130,7 @@ export default function StoryPage({ story }: { story: Story }) {
             </div>
             {d >= 14 && keelRec && world === 'keel' && (
               <div className="flex items-center gap-2 text-[13px]">
+                <Who who="nurse" />
                 <span className="text-mist">2-week outlook</span>
                 <span className="rounded-full px-2.5 py-0.5 font-medium text-sea transition-colors" style={{ background: riskColor(keelRec.risk) }}>
                   {riskWord(keelRec.risk)} · {keelRec.risk > 0.95 ? 'over 95' : keelRec.risk < 0.02 ? 'under 2' : Math.round(keelRec.risk * 100)}% relapse risk
@@ -139,7 +159,7 @@ export default function StoryPage({ story }: { story: Story }) {
                   </>
                 ) : (
                   <>
-                    <h3 className="mb-2 text-[13px] font-medium text-foam">{d < 14 ? 'Learning her normal' : 'Today’s plan'}</h3>
+                    <h3 className="mb-2 flex items-center gap-2 text-[13px] font-medium text-foam">{d < 14 ? 'Learning her normal' : 'Today’s plan'}{d >= 1 && <Who who="aino" />}</h3>
                     {d >= 1 && <div className="mb-3"><PlanToday rec={keelRec!} /></div>}
                     <RingSignals story={story} rec={keelRec!} />
                   </>
@@ -151,7 +171,7 @@ export default function StoryPage({ story }: { story: Story }) {
                 <ClinicToast story={story} />
               ) : (
               <div className="hidden border-t border-foam/15 pt-4 md:block">
-                <h3 className="mb-2 text-[13px] font-medium text-foam">What helps {story.profile.name}</h3>
+                <h3 className="mb-2 flex items-center gap-2 text-[13px] font-medium text-foam">What helps {story.profile.name}{d >= 1 && <Who who="aino" />}</h3>
                 <LearnedBars mean={(keelRec ?? story.keel[0]).learned.mean} sd={(keelRec ?? story.keel[0]).learned.sd} highlight={keelRec?.plan} />
               </div>
               )}
@@ -199,7 +219,7 @@ function ClinicToast({ story }: { story: Story }) {
   })
   return (
     <div className="fade-in self-start bg-foam p-5 text-ink">
-      <div className="flex items-center justify-between text-[11px] text-ink/50"><span>Espoo TMS clinic · call list</span><span>day {a}</span></div>
+      <div className="flex items-center justify-between text-[11px] text-ink/50"><span>Espoo TMS clinic call list, day {a}</span><Who who="nurse" light /></div>
       <div className="mt-1.5 flex items-center gap-2">
         <span className="pulse-ring inline-block h-2.5 w-2.5 rounded-full bg-storm" />
         <span className="text-[15px] font-medium">{story.profile.name} K. · talk about a booster</span>
@@ -234,10 +254,18 @@ function Results({ story }: { story: Story }) {
       <div className="space-y-3 text-[13px] leading-snug text-mist">
         <p><span className="font-serif text-[30px] text-foam">{c.forecast.median_warning_days_keel} days</span><br />typical warning before a relapse, against {c.forecast.median_warning_days_checkin_only} from check-ins alone at the same false-alarm rate</p>
         <p><span className="font-serif text-[30px] text-foam">{keel.boosters_per_patient.toFixed(1)}</span> booster blocks per person in 6 months, only when the forecast called for one</p>
-        <a href="#/proof" className="inline-block rounded-full border border-foam px-5 py-2 text-[15px] tracking-[-0.03em] text-foam hover:bg-foam hover:text-sea">How we know</a>
       </div>
     </div>
   )
+}
+
+/** Who sees this: the patient, or only her care team. */
+function Who({ who, light = false }: { who: 'aino' | 'nurse'; light?: boolean }) {
+  const t = who === 'aino' ? 'Aino sees this' : 'Only her nurse sees this'
+  const c = who === 'aino'
+    ? (light ? 'border-[#2e8c73]/40 text-[#2e8c73]' : 'border-calm/50 text-calm')
+    : (light ? 'border-[#b5443a]/40 text-[#b5443a]' : 'border-storm/50 text-storm')
+  return <span className={`whitespace-nowrap rounded-full border px-2 py-[1px] text-[10px] font-normal ${c}`}>{t}</span>
 }
 
 function Timeline({ chapters, ci, day, onGo, onPrev, onNext, world, onWorld, canToggle, auto, onAuto }: {
@@ -268,13 +296,16 @@ function Timeline({ chapters, ci, day, onGo, onPrev, onNext, world, onWorld, can
           <div className="absolute left-0 top-0 h-1 rounded-full bg-foam/70" style={{ width: pct(day) }} />
         </div>
       </div>
-      <div className={`hidden rounded-full bg-sea-2 p-0.5 text-[12px] sm:flex ${canToggle ? '' : 'opacity-40'}`}>
-        {(['keel', 'none'] as const).map((w) => (
-          <button key={w} disabled={!canToggle} onClick={() => onWorld(w)}
-            className={`rounded-full px-3 py-1.5 ${world === w ? (w === 'keel' ? 'bg-calm text-sea' : 'bg-storm text-sea') : 'text-mist'}`}>
-            {w === 'keel' ? 'With Keel' : 'Without'}
-          </button>
-        ))}
+      <div className={`hidden items-center gap-2 text-[12px] sm:flex ${canToggle ? '' : 'opacity-40'}`} title="The same six months of Aino's life, lived with Keel or without it">
+        <span className="hidden text-mist xl:inline">Same six months</span>
+        <div className="flex rounded-full bg-sea-2 p-0.5" role="radiogroup" aria-label="Compare the same six months with and without Keel">
+          {(['keel', 'none'] as const).map((w) => (
+            <button key={w} disabled={!canToggle} onClick={() => onWorld(w)} role="radio" aria-checked={world === w}
+              className={`rounded-full px-3 py-1.5 ${world === w ? (w === 'keel' ? 'bg-calm text-sea' : 'bg-storm text-sea') : 'text-mist hover:text-foam'}`}>
+              {w === 'keel' ? 'With Keel' : 'Without Keel'}
+            </button>
+          ))}
+        </div>
       </div>
       <button onClick={onAuto} aria-pressed={auto} title="Play the story by itself"
         className={`hidden rounded-full px-3 py-2 text-[13px] md:block ${auto ? 'text-calm' : 'text-mist hover:text-foam'}`}>{auto ? 'Autoplay on' : 'Autoplay'}</button>

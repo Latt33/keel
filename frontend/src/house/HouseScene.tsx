@@ -5,7 +5,8 @@
  * Nothing here is measured directly: it is the model's state, told as a routine.
  */
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { PerformanceMonitor } from '@react-three/drei'
+import { useMemo, useRef, useState, type MutableRefObject } from 'react'
 import * as THREE from 'three'
 
 export interface HouseInput {
@@ -99,11 +100,12 @@ const ORBIT_C = LOOK.clone().addScaledVector(CDIR, -12).addScaledVector(UPS, 0.1
 const ORBIT_R = 5.7
 const SKY_Q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), CDIR)
 
-function World({ inp, onActivity }: { inp: HouseInput; onActivity?: (a: Activity) => void }) {
+/** Built once; reads the current story state from a ref every frame, so the story animating
+ *  the day does not make React rebuild the scene 60 times a second. */
+function World({ inpRef, onActivity }: { inpRef: MutableRefObject<HouseInput>; onActivity?: MutableRefObject<((a: Activity) => void) | undefined> }) {
   const { scene, size, camera } = useThree()
   const tod = useRef(0.3)
-  const prevDay = useRef(inp.day)
-  const inpRef = useRef(inp); inpRef.current = inp
+  const prevDay = useRef(inpRef.current.day)
   const sun = useRef<THREE.Mesh>(null!), moon = useRef<THREE.Mesh>(null!)
   const sunLight = useRef<THREE.DirectionalLight>(null!), amb = useRef<THREE.HemisphereLight>(null!)
   const lamp = useRef<THREE.PointLight>(null!), room = useRef<THREE.PointLight>(null!)
@@ -160,8 +162,8 @@ function World({ inp, onActivity }: { inp: HouseInput; onActivity?: (a: Activity
     const L = load(i.s)
     const key = p.what + clockOf(t)
     const now = performance.now()
-    if (onActivity && key !== lastWhat.current && (now - lastEmit.current > 140 || !lastWhat.current.startsWith(p.what))) {
-      lastWhat.current = key; lastEmit.current = now; onActivity({ clock: clockOf(t), what: p.what })
+    if (onActivity?.current && key !== lastWhat.current && (now - lastEmit.current > 140 || !lastWhat.current.startsWith(p.what))) {
+      lastWhat.current = key; lastEmit.current = now; onActivity.current({ clock: clockOf(t), what: p.what })
     }
     ;(sun.current.material as THREE.MeshBasicMaterial).opacity = elev > -0.15 ? 1 : 0.25
     ;(moon.current.material as THREE.MeshBasicMaterial).opacity = -elev > -0.15 ? 1 : 0.25
@@ -280,10 +282,16 @@ function Tree({ p, s }: { p: [number, number, number]; s: number }) {
 }
 
 export default function HouseScene({ inp, onActivity }: { inp: HouseInput; onActivity?: (a: Activity) => void }) {
-  return (
-    <Canvas orthographic shadows dpr={[1, 2]} gl={{ alpha: true, antialias: true }} camera={{ position: [9, 8.5, 11], zoom: 60, near: -50, far: 100 }}
+  const inpRef = useRef(inp); inpRef.current = inp
+  const actRef = useRef(onActivity); actRef.current = onActivity
+  // start sharp; if the machine can't keep up, drop resolution and then shadows
+  const [dpr, setDpr] = useState(() => Math.min(1.5, window.devicePixelRatio || 1))
+  const [shadows, setShadows] = useState(true)
+  return useMemo(() => (
+    <Canvas orthographic shadows={shadows} dpr={dpr} gl={{ alpha: true, antialias: true }} camera={{ position: [9, 8.5, 11], zoom: 60, near: -50, far: 100 }}
       onCreated={({ camera }) => camera.lookAt(LOOK)}>
-      <World inp={inp} onActivity={onActivity} />
+      <PerformanceMonitor flipflops={2} onDecline={() => { if (dpr > 1) setDpr(1); else setShadows(false) }} />
+      <World inpRef={inpRef} onActivity={actRef} />
     </Canvas>
-  )
+  ), [dpr, shadows])
 }

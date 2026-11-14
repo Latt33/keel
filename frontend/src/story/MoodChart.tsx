@@ -39,6 +39,13 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
   const boosterEnd = ev.booster[ev.booster.length - 1]
   const relapseY = y(story.relapse_phq)
   const strongKeel = world === 'keel'
+  // name the two lives right where they are drawn, so the comparison needs no legend
+  const head = (pts: ([number, number] | null)[]) => { for (let i = pts.length - 1; i >= 0; i--) if (pts[i]) return pts[i]!; return null }
+  const kH = day >= 3 ? head(moodPts) : null
+  const nH = day >= 3 && day <= found + 0.5 ? head(without) : null
+  let kY = kH?.[1] ?? 0, nY = nH?.[1] ?? 0
+  const apart = !!(kH && nH && Math.abs(kY - nY) > 28)   // label only once the two lives have visibly split
+  if (kH && nH && Math.abs(kY - nY) < 16) { const mid = (kY + nY) / 2; if (kY <= nY) { kY = mid - 8; nY = mid + 8 } else { kY = mid + 8; nY = mid - 8 } }
 
   return (
     <div ref={ref} className="relative h-full w-full">
@@ -112,6 +119,10 @@ export default function MoodChart({ story, day, world }: { story: Story; day: nu
 
         {/* today */}
         <line x1={x(day)} x2={x(day)} y1={m.t - 8} y2={H - m.b} stroke="#eef3f5" strokeOpacity={0.5} />
+
+        {/* the two lives, labelled at their heads */}
+        {apart && kH && <text x={kH[0] - 8} y={kY >= nY ? kY + 18 : kY - 8} textAnchor="end" className={`text-[12px] font-medium ${strongKeel ? 'fill-foam' : 'fill-foam/50'}`}>with Keel</text>}
+        {apart && nH && <text x={nH[0] - 8} y={kY >= nY ? nY - 8 : nY + 18} textAnchor="end" className={`text-[12px] font-medium ${strongKeel ? 'fill-storm/70' : 'fill-storm'}`}>without Keel</text>}
 
         {/* legend */}
         <g transform={`translate(${m.l},14)`} className="text-[11px]">
